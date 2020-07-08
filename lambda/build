@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+npm i
+npx tsc ./*.ts
+zip -r code.zip ./*.js node_modules
+rm ./*.js

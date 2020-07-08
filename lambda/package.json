@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "aws-cloudformation-custom-resource": "^2.0.1"
+  }
+}

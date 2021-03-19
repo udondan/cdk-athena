@@ -3,7 +3,7 @@
 [![Source](https://img.shields.io/badge/Source-GitHub-blue?logo=github)][source]
 [![Test](https://github.com/udondan/cdk-athena/workflows/Test/badge.svg)](https://github.com/udondan/cdk-athena/actions?query=workflow%3ATest)
 [![GitHub](https://img.shields.io/github/license/udondan/cdk-athena)][license]
-[![Docs](https://img.shields.io/badge/awscdk.io-cdk--athena--workgroup-orange)][docs]
+[![Docs](https://img.shields.io/badge/awscdk.io-cdk--athena-orange)][docs]
 
 [![npm package](https://img.shields.io/npm/v/cdk-athena?color=brightgreen)][npm]
 [![PyPI package](https://img.shields.io/pypi/v/cdk-athena?color=brightgreen)][PyPI]
@@ -73,9 +73,9 @@ new cdk.CfnOutput(this, 'QueryId', {
    [AWS CDK]: https://aws.amazon.com/cdk/
    [custom CloudFormation resource]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html
    [WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
-   [npm]: https://www.npmjs.com/package/cdk-athena-workgroup
-   [PyPI]: https://pypi.org/project/cdk-athena-workgroup/
-   [NuGet]: https://www.nuget.org/packages/CDK.Athena.WorkGroup/
-   [docs]: https://awscdk.io/packages/cdk-athena-workgroup@2.0.0
-   [source]: https://github.com/udondan/cdk-athena-workgroup
-   [license]: https://github.com/udondan/cdk-athena-workgroup/blob/master/LICENSE
+   [npm]: https://www.npmjs.com/package/cdk-athena
+   [PyPI]: https://pypi.org/project/cdk-athena/
+   [NuGet]: https://www.nuget.org/packages/CDK.Athena/
+   [docs]: https://awscdk.io/packages/cdk-athena@2.0.0
+   [source]: https://github.com/udondan/cdk-athena
+   [license]: https://github.com/udondan/cdk-athena/blob/master/LICENSE

@@ -15,7 +15,7 @@ export class Stack extends cdk.Stack {
     });
 
     const workgroup = new WorkGroup(this, 'TestGroup', {
-      name: 'Test-50',
+      name: 'Test',
       desc: 'Description of the WorkGroup',
       publishCloudWatchMetricsEnabled: true,
       enforceWorkGroupConfiguration: true,
@@ -35,7 +35,7 @@ export class Stack extends cdk.Stack {
 
     const query = new NamedQuery(this, 'a-query', {
       name: 'A Test Query',
-      database: 'audit',
+      database: 'some-database',
       desc: 'This is the description',
       queryString: `
         SELECT

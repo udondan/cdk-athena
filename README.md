@@ -14,12 +14,12 @@
 [![PyPI](https://img.shields.io/pypi/dm/cdk-athena-workgroup?label=pypi&color=blueviolet)][PyPI]
 [![NuGet](https://img.shields.io/nuget/dt/CDK.Athena.WorkGroup?label=nuget&color=blueviolet)][NuGet]
 
-[AWS CDK] L3 construct for managing [Athena WorkGroups].
+[AWS CDK] L3 construct for managing [WorkGroups] and named queries.
 
 Because I couldn't get [@aws-cdk/aws-athena.CfnWorkGroup](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-athena.CfnWorkGroup.html) to work and [@aws-cdk/custom-resources.AwsCustomResource](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_custom-resources.AwsCustomResource.html) has no support for tags.
 
 ```typescript
-const wg = new WorkGroup(this, 'WorkGroup', {
+const workgroup = new WorkGroup(this, 'WorkGroup', {
   name: 'TheName', // required
   desc: 'Some description',
   publishCloudWatchMetricsEnabled: true,
@@ -34,6 +34,27 @@ const wg = new WorkGroup(this, 'WorkGroup', {
   },
 });
 
+const query = new NamedQuery(this, 'a-query', {
+  name: 'A Test Query',
+  database: 'audit',
+  desc: 'This is the description',
+  queryString: `
+    SELECT
+      count(*) AS assumed,
+      split(useridentity.principalid, ':')[2] AS user,
+      resources[1].arn AS role
+    FROM cloudtrail_logs
+    WHERE
+      eventname='AssumeRole' AND
+      useridentity.principalid is NOT NULL AND
+      useridentity.principalid LIKE '%@%'
+    GROUP BY
+      split(useridentity.principalid,':')[2],
+      resources[1].arn
+  `,
+  workGroup: workgroup,
+});
+
 cdk.Tag.add(wg, 'HelloTag', 'ok');
 
 new cdk.CfnOutput(this, 'WorkGroupArn', {
@@ -43,11 +64,15 @@ new cdk.CfnOutput(this, 'WorkGroupArn', {
 new cdk.CfnOutput(this, 'WorkGroupName', {
   value: wg.name,
 });
+
+new cdk.CfnOutput(this, 'QueryId', {
+  value: query.id,
+});
 ```
 
    [AWS CDK]: https://aws.amazon.com/cdk/
    [custom CloudFormation resource]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html
-   [Athena WorkGroups]:https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
+   [WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
    [npm]: https://www.npmjs.com/package/cdk-athena-workgroup
    [PyPI]: https://pypi.org/project/cdk-athena-workgroup/
    [NuGet]: https://www.nuget.org/packages/CDK.Athena.WorkGroup/

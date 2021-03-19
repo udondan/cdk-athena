@@ -4,7 +4,10 @@ install:
 build: install
 	@npm run build
 
-deploy: build lambda
+diff: build
+	@cdk diff
+
+deploy: build
 	@cdk deploy --require-approval never
 
 DESTROY: build

@@ -1,6 +1,7 @@
 export {
   EncryptionConfiguration,
   EncryptionOption,
+  ResultConfiguration,
   WorkGroupProps,
   WorkGroup,
 } from './workGroup';

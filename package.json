@@ -1,6 +1,6 @@
 {
-  "name": "cdk-athena-workgroup",
-  "description": "CDK Construct for creating Athena WorkGroups",
+  "name": "cdk-athena",
+  "description": "CDK Construct for creating Athena resources",
   "version": "0.0.0",
   "license": "Apache-2.0",
   "author": {
@@ -11,20 +11,21 @@
   "awscdkio": {
     "twitter": "udondan"
   },
-  "homepage": "https://github.com/udondan/cdk-athena-workgroup",
+  "homepage": "https://github.com/udondan/cdk-athena",
   "repository": {
     "type": "git",
-    "url": "https://github.com/udondan/cdk-athena-workgroup.git"
+    "url": "https://github.com/udondan/cdk-athena.git"
   },
   "bugs": {
-    "url": "https://github.com/udondan/cdk-athena-workgroup/issues"
+    "url": "https://github.com/udondan/cdk-athena/issues"
   },
   "keywords": [
     "aws",
     "cdk",
     "aws-cdk",
     "athena",
-    "workgroup"
+    "workgroup",
+    "namedquery"
   ],
   "stability": "stable",
   "main": "lib/index.js",
@@ -42,40 +43,39 @@
     "outdir": "dist",
     "targets": {
       "python": {
-        "distName": "cdk-athena-workgroup",
-        "module": "cdk_athena_workgroup"
+        "distName": "cdk-athena",
+        "module": "cdk_athena"
       },
       "dotnet": {
-        "namespace": "CDK.Athena.WorkGroup",
-        "packageId": "CDK.Athena.WorkGroup"
+        "namespace": "CDK.Athena",
+        "packageId": "CDK.Athena"
       }
     }
   },
   "devDependencies": {
-    "@aws-cdk/assert": "^1.50.0",
-    "@types/aws-lambda": "^8.10.58",
-    "@types/js-yaml": "^3.12.5",
-    "@types/node": "^10.17.5",
-    "aws-lambda": "^1.0.6",
-    "aws-sdk": "^2.711.0",
-    "jsii": "^1.5.0",
-    "jsii-pacmak": "^1.5.0",
-    "ts-node": "^8.10.2",
-    "typescript": "~3.7.2"
-  },
-  "dependencies": {
     "@aws-cdk/aws-cloudformation": "^1.50.0",
     "@aws-cdk/aws-iam": "^1.50.0",
     "@aws-cdk/aws-lambda": "^1.50.0",
     "@aws-cdk/core": "^1.50.0",
-    "iam-floyd": "^0.20.0"
+    "@types/aws-lambda": "^8.10.72",
+    "@types/js-yaml": "^4.0.0",
+    "@types/node": "^14.14.35",
+    "aws-lambda": "^1.0.6",
+    "aws-sdk": "^2.866.0",
+    "jsii": "^1.25.0",
+    "jsii-pacmak": "^1.25.0",
+    "ts-node": "^9.1.1",
+    "typescript": "~4.2.3"
+  },
+  "dependencies": {
+    "cdk-iam-floyd": "0.146.0"
   },
   "peerDependencies": {
     "@aws-cdk/aws-cloudformation": "^1.50.0",
     "@aws-cdk/aws-iam": "^1.50.0",
     "@aws-cdk/aws-lambda": "^1.50.0",
     "@aws-cdk/core": "^1.50.0",
-    "constructs": "^3.0.4",
-    "iam-floyd": "^0.20.0"
+    "cdk-iam-floyd": "0.146.0",
+    "constructs": "^3.2.80"
   }
 }

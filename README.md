@@ -1,20 +1,20 @@
 # CDK Athena WorkGroup
 
 [![Source](https://img.shields.io/badge/Source-GitHub-blue?logo=github)][source]
-[![Test](https://github.com/udondan/cdk-athena-workgroup/workflows/Test/badge.svg)](https://github.com/udondan/cdk-athena-workgroup/actions?query=workflow%3ATest)
-[![GitHub](https://img.shields.io/github/license/udondan/cdk-athena-workgroup)][license]
+[![Test](https://github.com/udondan/cdk-athena/workflows/Test/badge.svg)](https://github.com/udondan/cdk-athena/actions?query=workflow%3ATest)
+[![GitHub](https://img.shields.io/github/license/udondan/cdk-athena)][license]
 [![Docs](https://img.shields.io/badge/awscdk.io-cdk--athena--workgroup-orange)][docs]
 
-[![npm package](https://img.shields.io/npm/v/cdk-athena-workgroup?color=brightgreen)][npm]
-[![PyPI package](https://img.shields.io/pypi/v/cdk-athena-workgroup?color=brightgreen)][PyPI]
-[![NuGet package](https://img.shields.io/nuget/v/CDK.Athena.WorkGroup?color=brightgreen)][NuGet]
+[![npm package](https://img.shields.io/npm/v/cdk-athena?color=brightgreen)][npm]
+[![PyPI package](https://img.shields.io/pypi/v/cdk-athena?color=brightgreen)][PyPI]
+[![NuGet package](https://img.shields.io/nuget/v/CDK.Athena?color=brightgreen)][NuGet]
 
 ![Downloads](https://img.shields.io/badge/-DOWNLOADS:-brightgreen?color=gray)
-[![npm](https://img.shields.io/npm/dt/cdk-athena-workgroup?label=npm&color=blueviolet)][npm]
-[![PyPI](https://img.shields.io/pypi/dm/cdk-athena-workgroup?label=pypi&color=blueviolet)][PyPI]
-[![NuGet](https://img.shields.io/nuget/dt/CDK.Athena.WorkGroup?label=nuget&color=blueviolet)][NuGet]
+[![npm](https://img.shields.io/npm/dt/cdk-athena?label=npm&color=blueviolet)][npm]
+[![PyPI](https://img.shields.io/pypi/dm/cdk-athena?label=pypi&color=blueviolet)][PyPI]
+[![NuGet](https://img.shields.io/nuget/dt/CDK.Athena?label=nuget&color=blueviolet)][NuGet]
 
-[AWS CDK] L3 construct for managing [WorkGroups] and named queries.
+[AWS CDK] L3 construct for managing Athena [WorkGroups] and named queries.
 
 Because I couldn't get [@aws-cdk/aws-athena.CfnWorkGroup](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-athena.CfnWorkGroup.html) to work and [@aws-cdk/custom-resources.AwsCustomResource](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_custom-resources.AwsCustomResource.html) has no support for tags.
 
@@ -55,14 +55,14 @@ const query = new NamedQuery(this, 'a-query', {
   workGroup: workgroup,
 });
 
-cdk.Tag.add(wg, 'HelloTag', 'ok');
+cdk.Tag.add(workgroup, 'HelloTag', 'ok');
 
 new cdk.CfnOutput(this, 'WorkGroupArn', {
-  value: wg.arn,
+  value: workgroup.arn,
 });
 
 new cdk.CfnOutput(this, 'WorkGroupName', {
-  value: wg.name,
+  value: workgroup.name,
 });
 
 new cdk.CfnOutput(this, 'QueryId', {

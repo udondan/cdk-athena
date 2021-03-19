@@ -76,6 +76,6 @@ new cdk.CfnOutput(this, 'QueryId', {
    [npm]: https://www.npmjs.com/package/cdk-athena-workgroup
    [PyPI]: https://pypi.org/project/cdk-athena-workgroup/
    [NuGet]: https://www.nuget.org/packages/CDK.Athena.WorkGroup/
-   [docs]: https://awscdk.io/packages/cdk-athena-workgroup@1.0.0
+   [docs]: https://awscdk.io/packages/cdk-athena-workgroup@2.0.0
    [source]: https://github.com/udondan/cdk-athena-workgroup
    [license]: https://github.com/udondan/cdk-athena-workgroup/blob/master/LICENSE

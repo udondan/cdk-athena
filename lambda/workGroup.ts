@@ -267,9 +267,9 @@ function Delete(event: any): Promise<Event> {
     `Attempting to delete Athena WorkGroup ${event.ResourceProperties.Name}`
   );
   return new Promise(function (resolve, reject) {
-    const params = {
+    const params: AWS.Athena.DeleteWorkGroupInput = {
       WorkGroup: event.ResourceProperties.Name,
-      RecursiveDeleteOption: false,
+      RecursiveDeleteOption: true,
     };
 
     log.debug('Sending payload', JSON.stringify(params, null, 2));

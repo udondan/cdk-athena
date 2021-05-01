@@ -60,7 +60,7 @@ export function ensureLambda(scope: cdk.Construct): lambda.Function {
     functionName: `${stack.stackName}-${lambdaName}`,
     role: role,
     description: 'Custom CFN resource: Manage Athena resources',
-    runtime: lambda.Runtime.NODEJS_10_X,
+    runtime: lambda.Runtime.NODEJS_14_X,
     handler: 'index.handler',
     code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/code.zip')),
     timeout: lambdaTimeout,

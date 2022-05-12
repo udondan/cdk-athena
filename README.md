@@ -7,12 +7,10 @@
 
 [![npm package](https://img.shields.io/npm/v/cdk-athena?color=brightgreen)][npm]
 [![PyPI package](https://img.shields.io/pypi/v/cdk-athena?color=brightgreen)][PyPI]
-[![NuGet package](https://img.shields.io/nuget/v/CDK.Athena?color=brightgreen)][NuGet]
 
 ![Downloads](https://img.shields.io/badge/-DOWNLOADS:-brightgreen?color=gray)
 [![npm](https://img.shields.io/npm/dt/cdk-athena?label=npm&color=blueviolet)][npm]
 [![PyPI](https://img.shields.io/pypi/dm/cdk-athena?label=pypi&color=blueviolet)][PyPI]
-[![NuGet](https://img.shields.io/nuget/dt/CDK.Athena?label=nuget&color=blueviolet)][NuGet]
 
 [AWS CDK] L3 construct for managing Athena [WorkGroups] and named queries.
 
@@ -75,7 +73,6 @@ new cdk.CfnOutput(this, 'QueryId', {
    [WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
    [npm]: https://www.npmjs.com/package/cdk-athena
    [PyPI]: https://pypi.org/project/cdk-athena/
-   [NuGet]: https://www.nuget.org/packages/CDK.Athena/
    [docs]: https://awscdk.io/packages/cdk-athena@2.0.0
    [source]: https://github.com/udondan/cdk-athena
    [license]: https://github.com/udondan/cdk-athena/blob/master/LICENSE

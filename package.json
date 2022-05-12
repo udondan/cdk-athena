@@ -45,10 +45,6 @@
       "python": {
         "distName": "cdk-athena",
         "module": "cdk_athena"
-      },
-      "dotnet": {
-        "namespace": "CDK.Athena",
-        "packageId": "CDK.Athena"
       }
     }
   },
@@ -62,8 +58,8 @@
     "@types/node": "^17.0.32",
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1133.0",
-    "jsii": "1.55.1",
-    "jsii-pacmak": "1.55.1",
+    "jsii": "^1.58.0",
+    "jsii-pacmak": "^1.58.0",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"
   },

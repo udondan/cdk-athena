@@ -1,6 +1,5 @@
 import lambda = require('@aws-cdk/aws-lambda');
 import cdk = require('@aws-cdk/core');
-import * as statement from 'cdk-iam-floyd';
 
 import { ensureLambda } from './lambda';
 
@@ -172,9 +171,7 @@ export class WorkGroup extends cdk.Construct implements cdk.ITaggable {
           //EngineVersion: props.engineVersion,
           ResultConfiguration: props.resultConfiguration,
           StackName: stack.stackName,
-          Arn: new statement.Athena()
-            .onWorkgroup(this.name, stack.account, stack.region)
-            .toJSON().Resource,
+          Arn: `arn:aws:athena:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:workgroup/${this.name}`,
           Tags: cdk.Lazy.any({
             produce: () => this.tags.renderTags(),
           }),

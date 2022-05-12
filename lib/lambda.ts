@@ -1,7 +1,6 @@
 import iam = require('@aws-cdk/aws-iam');
 import lambda = require('@aws-cdk/aws-lambda');
 import cdk = require('@aws-cdk/core');
-import * as statement from 'cdk-iam-floyd';
 import path = require('path');
 
 const lambdaTimeout = cdk.Duration.seconds(10);
@@ -9,7 +8,6 @@ const lambdaTimeout = cdk.Duration.seconds(10);
 export function ensureLambda(scope: cdk.Construct): lambda.Function {
   const stack = cdk.Stack.of(scope);
   const lambdaName = 'AthenaManager';
-  const createdByTag = 'CreatedByCfnCustomResource';
   const ID = 'CFN::Resource::Custom::Athena';
   const existing = stack.node.tryFindChild(lambdaName);
   if (existing) {
@@ -20,27 +18,42 @@ export function ensureLambda(scope: cdk.Construct): lambda.Function {
     managedPolicyName: `${stack.stackName}-${lambdaName}`,
     description: `Used by Lambda ${lambdaName}, which is a custom CFN resource, managing Athena resources`,
     statements: [
-      new statement.Athena() //
-        .allow()
-        .toGetWorkGroup(),
-      new statement.Athena()
-        .allow()
-        .toCreateWorkGroup()
-        .toTagResource()
-        .ifAwsRequestTag(createdByTag, `${ID}-WorkGroup`),
-      new statement.Athena()
-        .allow()
-        .toDeleteWorkGroup()
-        .toUpdateWorkGroup()
-        .toTagResource()
-        .toUntagResource()
-        .ifAwsResourceTag(createdByTag, `${ID}-WorkGroup`),
-      new statement.Athena()
-        .allow()
-        .toGetNamedQuery()
-        .toListNamedQueries()
-        .toCreateNamedQuery()
-        .toDeleteNamedQuery(),
+      new iam.PolicyStatement({
+        actions: ['athena:GetWorkGroup'],
+        resources: ['*'],
+      }),
+      new iam.PolicyStatement({
+        actions: ['athena:CreateWorkGroup', 'athena:TagResource'],
+        resources: ['*'],
+        conditions: {
+          StringLike: {
+            'aws:RequestTag/CreatedByCfnCustomResource': `${ID}-WorkGroup`,
+          },
+        },
+      }),
+      new iam.PolicyStatement({
+        actions: [
+          'athena:DeleteWorkGroup',
+          'athena:TagResource',
+          'athena:UntagResource',
+          'athena:UpdateWorkGroup',
+        ],
+        resources: ['*'],
+        conditions: {
+          StringLike: {
+            'aws:ResourceTag/CreatedByCfnCustomResource': `${ID}-WorkGroup`,
+          },
+        },
+      }),
+      new iam.PolicyStatement({
+        actions: [
+          'athena:CreateNamedQuery',
+          'athena:DeleteNamedQuery',
+          'athena:GetNamedQuery',
+          'athena:ListNamedQueries',
+        ],
+        resources: ['*'],
+      }),
     ],
   });
 

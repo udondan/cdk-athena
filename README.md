@@ -22,7 +22,7 @@ This package has peer dependencies, which need to be installed along in the expe
 
 For TypeScript/NodeJS, add these to your `dependencies` in `package.json`. For Python, add these to your `requirements.txt`:
 
-- cdk-ec2-key-pair
+- cdk-athena
 - aws-cdk-lib (^2.0.0)
 - constructs (^10.0.0)
 

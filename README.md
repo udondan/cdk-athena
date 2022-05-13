@@ -3,7 +3,7 @@
 [![Source](https://img.shields.io/badge/Source-GitHub-blue?logo=github)][source]
 [![Test](https://github.com/udondan/cdk-athena/workflows/Test/badge.svg)](https://github.com/udondan/cdk-athena/actions?query=workflow%3ATest)
 [![GitHub](https://img.shields.io/github/license/udondan/cdk-athena)][license]
-[![Docs](https://img.shields.io/badge/awscdk.io-cdk--athena-orange)][docs]
+[![Docs](https://img.shields.io/badge/Construct%20Hub-cdk--athena-orange)][docs]
 
 [![npm package](https://img.shields.io/npm/v/cdk-athena?color=brightgreen)][npm]
 [![PyPI package](https://img.shields.io/pypi/v/cdk-athena?color=brightgreen)][PyPI]
@@ -90,6 +90,6 @@ new cdk.CfnOutput(this, 'QueryId', {
    [WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
    [npm]: https://www.npmjs.com/package/cdk-athena
    [PyPI]: https://pypi.org/project/cdk-athena/
-   [docs]: https://awscdk.io/packages/cdk-athena@2.0.0
+   [docs]: https://constructs.dev/packages/cdk-athena
    [source]: https://github.com/udondan/cdk-athena
    [license]: https://github.com/udondan/cdk-athena/blob/master/LICENSE

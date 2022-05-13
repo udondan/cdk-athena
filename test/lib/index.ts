@@ -1,7 +1,6 @@
 import { aws_kms, aws_s3, CfnOutput, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
+import { EncryptionOption, NamedQuery, WorkGroup } from 'cdk-athena';
 import { Construct } from 'constructs';
-
-import { EncryptionOption, NamedQuery, WorkGroup } from '../../lib';
 
 export class TestStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {

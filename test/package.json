@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "aws-cdk-lib": "2.x",
-    "cdk-athena-workgroup": "file:.."
+    "cdk-athena": "file:.."
   }
 }

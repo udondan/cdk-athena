@@ -1,8 +1,8 @@
 import { CustomResource, Event, LambdaEvent, StandardLogger } from 'aws-cloudformation-custom-resource';
 import { Callback, Context } from 'aws-lambda';
-import AWS = require('aws-sdk');
+import { Athena, AWSError } from 'aws-sdk';
 
-const athena = new AWS.Athena();
+const athena = new Athena();
 
 let log: StandardLogger;
 
@@ -25,7 +25,7 @@ function Create(event: Event): Promise<Event> {
     `Attempting to create Athena WorkGroup ${event.ResourceProperties.Name}`
   );
   return new Promise(function (resolve, reject) {
-    const params: AWS.Athena.CreateWorkGroupInput = {
+    const params: Athena.CreateWorkGroupInput = {
       Name: event.ResourceProperties.Name,
       Description: event.ResourceProperties.Description,
       Configuration: {
@@ -61,7 +61,7 @@ function Create(event: Event): Promise<Event> {
 
     athena.createWorkGroup(
       params,
-      function (err: AWS.AWSError, _: AWS.Athena.CreateWorkGroupOutput) {
+      function (err: AWSError, _: Athena.CreateWorkGroupOutput) {
         if (err) return reject(err);
         event.addResponseValue('ARN', event.ResourceProperties.Arn);
         resolve(event);
@@ -85,7 +85,7 @@ function Update(event: Event): Promise<Event> {
   });
 }
 
-function getWorkGroup(name: string): Promise<AWS.Athena.GetWorkGroupOutput> {
+function getWorkGroup(name: string): Promise<Athena.GetWorkGroupOutput> {
   log.info(`Fetching details of Athena WorkGroup ${name}`);
   return new Promise(function (resolve, reject) {
     const params = {
@@ -96,7 +96,7 @@ function getWorkGroup(name: string): Promise<AWS.Athena.GetWorkGroupOutput> {
 
     athena.getWorkGroup(
       params,
-      function (err: AWS.AWSError, data: AWS.Athena.GetWorkGroupOutput) {
+      function (err: AWSError, data: Athena.GetWorkGroupOutput) {
         if (err) return reject(err);
         resolve(data);
       }
@@ -110,7 +110,7 @@ function updateWorkGroup(event: Event): Promise<Event> {
   );
   return new Promise(async function (resolve, reject) {
     try {
-      var current: AWS.Athena.GetWorkGroupOutput = await getWorkGroup(
+      var current: Athena.GetWorkGroupOutput = await getWorkGroup(
         event.ResourceProperties.Name
       );
     } catch (err) {
@@ -185,7 +185,7 @@ function updateWorkGroup(event: Event): Promise<Event> {
 
     athena.updateWorkGroup(
       params,
-      function (err: AWS.AWSError, _: AWS.Athena.UpdateWorkGroupOutput) {
+      function (err: AWSError, _: Athena.UpdateWorkGroupOutput) {
         if (err) return reject(err);
         resolve(event);
       }
@@ -216,7 +216,7 @@ function updateWorkGroupAddTags(event: Event): Promise<Event> {
 
     athena.tagResource(
       params,
-      function (err: AWS.AWSError, _: AWS.Athena.TagResourceOutput) {
+      function (err: AWSError, _: Athena.TagResourceOutput) {
         if (err) return reject(err);
         resolve(event);
       }
@@ -254,7 +254,7 @@ function updateWorkGroupRemoveTags(event: Event): Promise<Event> {
 
     athena.untagResource(
       params,
-      function (err: AWS.AWSError, _: AWS.Athena.UntagResourceOutput) {
+      function (err: AWSError, _: Athena.UntagResourceOutput) {
         if (err) return reject(err);
         resolve(event);
       }
@@ -267,7 +267,7 @@ function Delete(event: any): Promise<Event> {
     `Attempting to delete Athena WorkGroup ${event.ResourceProperties.Name}`
   );
   return new Promise(function (resolve, reject) {
-    const params: AWS.Athena.DeleteWorkGroupInput = {
+    const params: Athena.DeleteWorkGroupInput = {
       WorkGroup: event.ResourceProperties.Name,
       RecursiveDeleteOption: true,
     };
@@ -276,7 +276,7 @@ function Delete(event: any): Promise<Event> {
 
     athena.deleteWorkGroup(
       params,
-      function (err: AWS.AWSError, _: AWS.Athena.DeleteWorkGroupOutput) {
+      function (err: AWSError, _: Athena.DeleteWorkGroupOutput) {
         if (err) return reject(err);
         resolve(event);
       }
@@ -284,8 +284,8 @@ function Delete(event: any): Promise<Event> {
   });
 }
 
-function makeTags(event: Event, properties: any): AWS.Athena.TagList {
-  const tags: AWS.Athena.TagList = [
+function makeTags(event: Event, properties: any): Athena.TagList {
+  const tags: Athena.TagList = [
     {
       Key: 'aws-cloudformation:stack-id',
       Value: event.StackId,
@@ -311,17 +311,17 @@ function makeTags(event: Event, properties: any): AWS.Athena.TagList {
 }
 
 function getMissingTags(
-  oldTags: AWS.Athena.TagList,
-  newTags: AWS.Athena.TagList
+  oldTags: Athena.TagList,
+  newTags: Athena.TagList
 ): string[] {
   const missing = oldTags.filter(missingTags(newTags));
-  return missing.map(function (tag: AWS.Athena.Tag) {
+  return missing.map(function (tag: Athena.Tag) {
     return tag.Key;
   });
 }
 
-function missingTags(newTags: AWS.Athena.TagList) {
-  return (currentTag: AWS.Athena.Tag) => {
+function missingTags(newTags: Athena.TagList) {
+  return (currentTag: Athena.Tag) => {
     return (
       newTags.filter((newTag: any) => {
         return newTag.Key == currentTag.Key;

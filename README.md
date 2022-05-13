@@ -3,7 +3,7 @@
 [![Source](https://img.shields.io/badge/Source-GitHub-blue?logo=github)][source]
 [![Test](https://github.com/udondan/cdk-athena/workflows/Test/badge.svg)](https://github.com/udondan/cdk-athena/actions?query=workflow%3ATest)
 [![GitHub](https://img.shields.io/github/license/udondan/cdk-athena)][license]
-[![Docs](https://img.shields.io/badge/awscdk.io-cdk--athena-orange)][docs]
+[![Docs](https://img.shields.io/badge/Construct%20Hub-cdk--athena-orange)][docs]
 
 [![npm package](https://img.shields.io/npm/v/cdk-athena?color=brightgreen)][npm]
 [![PyPI package](https://img.shields.io/pypi/v/cdk-athena?color=brightgreen)][PyPI]
@@ -15,6 +15,23 @@
 [AWS CDK] L3 construct for managing Athena [WorkGroups] and named queries.
 
 Because I couldn't get [@aws-cdk/aws-athena.CfnWorkGroup](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-athena.CfnWorkGroup.html) to work and [@aws-cdk/custom-resources.AwsCustomResource](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_custom-resources.AwsCustomResource.html) has no support for tags.
+
+## Installation
+
+This package has peer dependencies, which need to be installed along in the expected version.
+
+For TypeScript/NodeJS, add these to your `dependencies` in `package.json`. For Python, add these to your `requirements.txt`:
+
+- cdk-ec2-key-pair
+- aws-cdk-lib (^2.0.0)
+- constructs (^10.0.0)
+
+## CDK compatibility
+
+- Version 3.x is compatible with the CDK v2.
+- Version 2.x is compatible with the CDK v1. There won't be regular updates for this.
+
+## Usage
 
 ```typescript
 const workgroup = new WorkGroup(this, 'WorkGroup', {
@@ -73,6 +90,6 @@ new cdk.CfnOutput(this, 'QueryId', {
    [WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
    [npm]: https://www.npmjs.com/package/cdk-athena
    [PyPI]: https://pypi.org/project/cdk-athena/
-   [docs]: https://awscdk.io/packages/cdk-athena@2.0.0
+   [docs]: https://constructs.dev/packages/cdk-athena
    [source]: https://github.com/udondan/cdk-athena
    [license]: https://github.com/udondan/cdk-athena/blob/master/LICENSE

@@ -1,5 +1,16 @@
-import lambda = require('@aws-cdk/aws-lambda');
-import cdk = require('@aws-cdk/core');
+import {
+  Annotations,
+  Aws,
+  aws_lambda,
+  CustomResource,
+  ITaggable,
+  Lazy,
+  Stack,
+  StackProps,
+  TagManager,
+  TagType,
+} from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 import { ensureLambda } from './lambda';
 
@@ -16,7 +27,7 @@ export enum EncryptionOption {
 /**
  * Definition of the Athena WorkGroup
  */
-export interface WorkGroupProps extends cdk.StackProps {
+export interface WorkGroupProps extends StackProps {
   /**
    * Name of the WorkGroup
    *
@@ -104,11 +115,11 @@ export interface EncryptionConfiguration {
 /**
  * An Athena WorkGroup
  */
-export class WorkGroup extends cdk.Construct implements cdk.ITaggable {
+export class WorkGroup extends Construct implements ITaggable {
   /**
    * The lambda function that is created
    */
-  public readonly lambda: lambda.IFunction;
+  public readonly lambda: aws_lambda.IFunction;
 
   /**
    * Name of the WorkGroup
@@ -123,37 +134,37 @@ export class WorkGroup extends cdk.Construct implements cdk.ITaggable {
   /**
    * Resource tags
    */
-  public readonly tags: cdk.TagManager;
+  public readonly tags: TagManager;
 
   /**
    * Defines a new Athena WorkGroup
    */
-  constructor(scope: cdk.Construct, id: string, props: WorkGroupProps) {
+  constructor(scope: Construct, id: string, props: WorkGroupProps) {
     super(scope, id);
 
     if (
       typeof props.bytesScannedCutoffPerQuery !== 'undefined' &&
       props.bytesScannedCutoffPerQuery < 10000000
     ) {
-      cdk.Annotations.of(scope.node).addError(
+      Annotations.of(this).addError(
         `Parameter bytesScannedCutoffPerQuery must have value greater than or equal to 10000000. Got ${props.bytesScannedCutoffPerQuery}`
       );
     }
 
     if (!props.name.match(/^[a-zA-Z0-9._-]{1,128}$/)) {
-      cdk.Annotations.of(scope.node).addError(
+      Annotations.of(this).addError(
         `The WorkGroup name must match /^[a-zA-Z0-9._-]{1,128}$/. Got "${props.name}"`
       );
     }
 
-    this.tags = new cdk.TagManager(cdk.TagType.MAP, resourceType);
+    this.tags = new TagManager(TagType.MAP, resourceType);
     this.tags.setTag(createdByTag, ID);
 
-    const stack = cdk.Stack.of(this);
+    const stack = Stack.of(this);
     this.lambda = ensureLambda(this);
     this.name = props.name;
 
-    const workGroup = new cdk.CustomResource(
+    const workGroup = new CustomResource(
       this,
       `Athena-WorkGroup-${this.name}`,
       {
@@ -171,8 +182,8 @@ export class WorkGroup extends cdk.Construct implements cdk.ITaggable {
           //EngineVersion: props.engineVersion,
           ResultConfiguration: props.resultConfiguration,
           StackName: stack.stackName,
-          Arn: `arn:aws:athena:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:workgroup/${this.name}`,
-          Tags: cdk.Lazy.any({
+          Arn: `arn:aws:athena:${Aws.REGION}:${Aws.ACCOUNT_ID}:workgroup/${this.name}`,
+          Tags: Lazy.any({
             produce: () => this.tags.renderTags(),
           }),
         },

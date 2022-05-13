@@ -1,17 +1,16 @@
-import kms = require('@aws-cdk/aws-kms');
-import s3 = require('@aws-cdk/aws-s3');
-import * as cdk from '@aws-cdk/core';
+import { aws_kms, aws_s3, CfnOutput, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 import { EncryptionOption, NamedQuery, WorkGroup } from '../../lib';
 
-export class Stack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+export class TestStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const bucket = new s3.Bucket(this, 'bucket', {
-      encryptionKey: kms.Alias.fromAliasName(this, 'Key', 'aws/s3'),
+    const bucket = new aws_s3.Bucket(this, 'bucket', {
+      encryptionKey: aws_kms.Alias.fromAliasName(this, 'Key', 'aws/s3'),
       autoDeleteObjects: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const workgroup = new WorkGroup(this, 'TestGroup', {
@@ -31,7 +30,7 @@ export class Stack extends cdk.Stack {
       },
     });
 
-    cdk.Tags.of(workgroup).add('SomeTag', 'SomeValue');
+    Tags.of(workgroup).add('SomeTag', 'SomeValue');
 
     const query = new NamedQuery(this, 'a-query', {
       name: 'A Test Query',
@@ -54,15 +53,15 @@ export class Stack extends cdk.Stack {
       workGroup: workgroup,
     });
 
-    new cdk.CfnOutput(this, 'WorkGroupArn', {
+    new CfnOutput(this, 'WorkGroupArn', {
       value: workgroup.arn,
     });
 
-    new cdk.CfnOutput(this, 'WorkGroupName', {
+    new CfnOutput(this, 'WorkGroupName', {
       value: workgroup.name,
     });
 
-    new cdk.CfnOutput(this, 'QueryId', {
+    new CfnOutput(this, 'QueryId', {
       value: query.id,
     });
   }

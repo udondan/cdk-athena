@@ -1,8 +1,8 @@
 import { CustomResource, Event, LambdaEvent, StandardLogger } from 'aws-cloudformation-custom-resource';
 import { Callback, Context } from 'aws-lambda';
-import AWS = require('aws-sdk');
+import { Athena, AWSError } from 'aws-sdk';
 
-const athena = new AWS.Athena();
+const athena = new Athena();
 
 let log: StandardLogger;
 
@@ -109,7 +109,7 @@ function createQuery(resourceProperties: any): Promise<String> {
 
     athena.createNamedQuery(
       params,
-      function (err: AWS.AWSError, data: AWS.Athena.CreateNamedQueryOutput) {
+      function (err: AWSError, data: Athena.CreateNamedQueryOutput) {
         if (err) return reject(err);
         resolve(data.NamedQueryId);
       }
@@ -117,12 +117,10 @@ function createQuery(resourceProperties: any): Promise<String> {
   });
 }
 
-function deleteQuery(
-  queryId: string
-): Promise<AWS.Athena.DeleteNamedQueryOutput> {
+function deleteQuery(queryId: string): Promise<Athena.DeleteNamedQueryOutput> {
   log.info(`Attempting to delete Athena NamedQuery with ID ${queryId}`);
   return new Promise(function (resolve, reject) {
-    const params: AWS.Athena.DeleteNamedQueryInput = {
+    const params: Athena.DeleteNamedQueryInput = {
       NamedQueryId: queryId,
     };
 
@@ -130,7 +128,7 @@ function deleteQuery(
 
     athena.deleteNamedQuery(
       params,
-      function (err: AWS.AWSError, result: AWS.Athena.DeleteNamedQueryOutput) {
+      function (err: AWSError, result: Athena.DeleteNamedQueryOutput) {
         if (err) return reject(err);
         resolve(result);
       }
@@ -140,9 +138,9 @@ function deleteQuery(
 
 function getWorkGroupQueries(
   resourceProperties: any
-): Promise<AWS.Athena.ListNamedQueriesOutput> {
+): Promise<Athena.ListNamedQueriesOutput> {
   return new Promise(function (resolve, reject) {
-    const params: AWS.Athena.ListNamedQueriesInput = {};
+    const params: Athena.ListNamedQueriesInput = {};
     if (resourceProperties.WorkGroup.length) {
       params['WorkGroup'] = resourceProperties.WorkGroup;
     }
@@ -151,7 +149,7 @@ function getWorkGroupQueries(
 
     athena.listNamedQueries(
       params,
-      function (err: AWS.AWSError, data: AWS.Athena.ListNamedQueriesOutput) {
+      function (err: AWSError, data: Athena.ListNamedQueriesOutput) {
         if (err) return reject(err);
         resolve(data);
       }
@@ -159,9 +157,7 @@ function getWorkGroupQueries(
   });
 }
 
-function getNamedQuery(
-  resourceProperties: any
-): Promise<AWS.Athena.NamedQuery> {
+function getNamedQuery(resourceProperties: any): Promise<Athena.NamedQuery> {
   return new Promise(async function (resolve, reject) {
     try {
       const queries = await getWorkGroupQueries(resourceProperties);
@@ -200,15 +196,15 @@ function getNamedQuery(
 
 function getNamedQueryDetails(
   queryId: string
-): Promise<AWS.Athena.GetNamedQueryOutput> {
+): Promise<Athena.GetNamedQueryOutput> {
   return new Promise(function (resolve, reject) {
-    const params: AWS.Athena.GetNamedQueryInput = {
+    const params: Athena.GetNamedQueryInput = {
       NamedQueryId: queryId,
     };
 
     athena.getNamedQuery(
       params,
-      function (err: AWS.AWSError, data: AWS.Athena.GetNamedQueryOutput) {
+      function (err: AWSError, data: Athena.GetNamedQueryOutput) {
         if (err) return reject(err);
         resolve(data);
       }

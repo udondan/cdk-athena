@@ -1,5 +1,5 @@
-import lambda = require('@aws-cdk/aws-lambda');
-import cdk = require('@aws-cdk/core');
+import { aws_lambda, CustomResource, StackProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 import { ensureLambda } from './lambda';
 import { WorkGroup } from './workGroup';
@@ -9,7 +9,7 @@ const resourceType = 'Custom::Athena-NamedQuery';
 /**
  * Definition of the Athena NamedQuery
  */
-export interface NamedQueryProps extends cdk.StackProps {
+export interface NamedQueryProps extends StackProps {
   /**
    * The query name
    */
@@ -39,11 +39,11 @@ export interface NamedQueryProps extends cdk.StackProps {
 /**
  * An Athena NamedQuery
  */
-export class NamedQuery extends cdk.Construct {
+export class NamedQuery extends Construct {
   /**
    * The lambda function that is created
    */
-  public readonly lambda: lambda.IFunction;
+  public readonly lambda: aws_lambda.IFunction;
   /**
    * Name of the query
    */
@@ -57,7 +57,7 @@ export class NamedQuery extends cdk.Construct {
   /**
    * Defines a new Athena NamedQuery
    */
-  constructor(scope: cdk.Construct, id: string, props: NamedQueryProps) {
+  constructor(scope: Construct, id: string, props: NamedQueryProps) {
     super(scope, id);
 
     this.lambda = ensureLambda(this);
@@ -81,7 +81,7 @@ export class NamedQuery extends cdk.Construct {
       queryProps.properties.WorkGroup = (props.workGroup! as WorkGroup).name;
     }
 
-    const namedQuery = new cdk.CustomResource(
+    const namedQuery = new CustomResource(
       this,
       `Athena-NamedQuery-${props.name
         .replace(/\s+/g, '-')

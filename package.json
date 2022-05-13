@@ -49,25 +49,20 @@
     }
   },
   "devDependencies": {
-    "@aws-cdk/aws-cloudformation": "^1.50.0",
-    "@aws-cdk/aws-iam": "^1.50.0",
-    "@aws-cdk/aws-lambda": "^1.50.0",
-    "@aws-cdk/core": "^1.50.0",
     "@types/aws-lambda": "^8.10.97",
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^17.0.32",
+    "@types/node": "^17.0.33",
+    "aws-cdk-lib": "^2.0.0",
     "aws-lambda": "^1.0.7",
-    "aws-sdk": "^2.1133.0",
+    "aws-sdk": "^2.1134.0",
+    "constructs": "^10.0.0",
     "jsii": "^1.58.0",
     "jsii-pacmak": "^1.58.0",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-cloudformation": "^1.50.0",
-    "@aws-cdk/aws-iam": "^1.50.0",
-    "@aws-cdk/aws-lambda": "^1.50.0",
-    "@aws-cdk/core": "^1.50.0",
-    "constructs": "^3.2.80"
+    "aws-cdk-lib": "^2.0.0",
+    "constructs": "^10.0.0"
   }
 }

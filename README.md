@@ -16,6 +16,23 @@
 
 Because I couldn't get [@aws-cdk/aws-athena.CfnWorkGroup](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-athena.CfnWorkGroup.html) to work and [@aws-cdk/custom-resources.AwsCustomResource](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_custom-resources.AwsCustomResource.html) has no support for tags.
 
+## Installation
+
+This package has peer dependencies, which need to be installed along in the expected version.
+
+For TypeScript/NodeJS, add these to your `dependencies` in `package.json`. For Python, add these to your `requirements.txt`:
+
+- cdk-ec2-key-pair
+- aws-cdk-lib (^2.0.0)
+- constructs (^10.0.0)
+
+## CDK compatibility
+
+- Version 3.x is compatible with the CDK v2.
+- Version 2.x is compatible with the CDK v1. There won't be regular updates for this.
+
+## Usage
+
 ```typescript
 const workgroup = new WorkGroup(this, 'WorkGroup', {
   name: 'TheName', // required

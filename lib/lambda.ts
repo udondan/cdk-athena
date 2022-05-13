@@ -1,28 +1,27 @@
-import iam = require('@aws-cdk/aws-iam');
-import lambda = require('@aws-cdk/aws-lambda');
-import cdk = require('@aws-cdk/core');
+import { aws_iam, aws_lambda, Duration, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 import path = require('path');
 
-const lambdaTimeout = cdk.Duration.seconds(10);
+const lambdaTimeout = Duration.seconds(10);
 
-export function ensureLambda(scope: cdk.Construct): lambda.Function {
-  const stack = cdk.Stack.of(scope);
+export function ensureLambda(scope: Construct): aws_lambda.Function {
+  const stack = Stack.of(scope);
   const lambdaName = 'AthenaManager';
   const ID = 'CFN::Resource::Custom::Athena';
   const existing = stack.node.tryFindChild(lambdaName);
   if (existing) {
-    return existing as lambda.Function;
+    return existing as aws_lambda.Function;
   }
 
-  const policy = new iam.ManagedPolicy(stack, 'Athena-Manager-Policy', {
+  const policy = new aws_iam.ManagedPolicy(stack, 'Athena-Manager-Policy', {
     managedPolicyName: `${stack.stackName}-${lambdaName}`,
     description: `Used by Lambda ${lambdaName}, which is a custom CFN resource, managing Athena resources`,
     statements: [
-      new iam.PolicyStatement({
+      new aws_iam.PolicyStatement({
         actions: ['athena:GetWorkGroup'],
         resources: ['*'],
       }),
-      new iam.PolicyStatement({
+      new aws_iam.PolicyStatement({
         actions: ['athena:CreateWorkGroup', 'athena:TagResource'],
         resources: ['*'],
         conditions: {
@@ -31,7 +30,7 @@ export function ensureLambda(scope: cdk.Construct): lambda.Function {
           },
         },
       }),
-      new iam.PolicyStatement({
+      new aws_iam.PolicyStatement({
         actions: [
           'athena:DeleteWorkGroup',
           'athena:TagResource',
@@ -45,7 +44,7 @@ export function ensureLambda(scope: cdk.Construct): lambda.Function {
           },
         },
       }),
-      new iam.PolicyStatement({
+      new aws_iam.PolicyStatement({
         actions: [
           'athena:CreateNamedQuery',
           'athena:DeleteNamedQuery',
@@ -57,25 +56,25 @@ export function ensureLambda(scope: cdk.Construct): lambda.Function {
     ],
   });
 
-  const role = new iam.Role(stack, 'Athena-Manager-Role', {
+  const role = new aws_iam.Role(stack, 'Athena-Manager-Role', {
     roleName: `${stack.stackName}-${lambdaName}`,
     description: `Used by Lambda ${lambdaName}, which is a custom CFN resource, managing Athena resources`,
-    assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    assumedBy: new aws_iam.ServicePrincipal('lambda.amazonaws.com'),
     managedPolicies: [
       policy,
-      iam.ManagedPolicy.fromAwsManagedPolicyName(
+      aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
         'service-role/AWSLambdaBasicExecutionRole'
       ),
     ],
   });
 
-  const fn = new lambda.Function(stack, lambdaName, {
+  const fn = new aws_lambda.Function(stack, lambdaName, {
     functionName: `${stack.stackName}-${lambdaName}`,
     role: role,
     description: 'Custom CFN resource: Manage Athena resources',
-    runtime: lambda.Runtime.NODEJS_14_X,
+    runtime: aws_lambda.Runtime.NODEJS_14_X,
     handler: 'index.handler',
-    code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/code.zip')),
+    code: aws_lambda.Code.fromAsset(path.join(__dirname, '../lambda/code.zip')),
     timeout: lambdaTimeout,
   });
 

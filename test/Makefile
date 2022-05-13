@@ -1,6 +1,7 @@
 clean:
 	@rm -rf ../node_modules ../package-lock.json
 	@rm -rf node_modules package-lock.json
+	@find .. \( -name "*.js" -o -name "*.d.ts" \) -type f -delete
 
 install: clean
 	@echo Installing dependencies...

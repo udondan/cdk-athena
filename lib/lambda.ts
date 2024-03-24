@@ -72,7 +72,7 @@ export function ensureLambda(scope: Construct): aws_lambda.Function {
     functionName: `${stack.stackName}-${lambdaName}`,
     role: role,
     description: 'Custom CFN resource: Manage Athena resources',
-    runtime: aws_lambda.Runtime.NODEJS_14_X,
+    runtime: aws_lambda.Runtime.NODEJS_20_X,
     handler: 'index.handler',
     code: aws_lambda.Code.fromAsset(path.join(__dirname, '../lambda/code.zip')),
     timeout: lambdaTimeout,

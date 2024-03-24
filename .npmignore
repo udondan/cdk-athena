@@ -14,3 +14,7 @@ dist
 !.jsii
 
 test
+
+.release-please-manifest.json
+release-please-config.json
+renovate.json

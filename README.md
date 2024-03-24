@@ -85,11 +85,10 @@ new cdk.CfnOutput(this, 'QueryId', {
 });
 ```
 
-[AWS CDK]: https://aws.amazon.com/cdk/
-[custom CloudFormation resource]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html
-[WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
-[npm]: https://www.npmjs.com/package/cdk-athena
-[PyPI]: https://pypi.org/project/cdk-athena/
-[docs]: https://constructs.dev/packages/cdk-athena
-[source]: https://github.com/udondan/cdk-athena
-[license]: https://github.com/udondan/cdk-athena/blob/main/LICENSE
+  [AWS CDK]: https://aws.amazon.com/cdk/
+  [WorkGroups]: https://docs.aws.amazon.com/athena/latest/ug/manage-queries-control-costs-with-workgroups.html
+  [npm]: https://www.npmjs.com/package/cdk-athena
+  [PyPI]: https://pypi.org/project/cdk-athena/
+  [docs]: https://constructs.dev/packages/cdk-athena
+  [source]: https://github.com/udondan/cdk-athena
+  [license]: https://github.com/udondan/cdk-athena/blob/main/LICENSE

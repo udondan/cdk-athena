@@ -1,29 +1,40 @@
-import { LambdaEvent, StandardLogger } from 'aws-cloudformation-custom-resource';
-import { Callback, Context } from 'aws-lambda';
-
-import { NamedQuery } from './namedQuery';
-import { WorkGroup } from './workGroup';
-
-const logger = new StandardLogger();
+import {
+  Context,
+  Callback,
+  Event,
+  StandardLogger,
+  LogLevel,
+} from 'aws-cloudformation-custom-resource';
+import { namedQuery } from './namedQuery';
+import { workGroup } from './workGroup';
+import { NamedQueryProperties, WorkGroupProperties } from './types';
 
 export const handler = function (
-  event: LambdaEvent = {},
+  event: Event<NamedQueryProperties | WorkGroupProperties>,
   context: Context,
-  callback: Callback
+  callback: Callback,
 ) {
+  // @TODO: conditional, based on props
+  const logger = new StandardLogger(LogLevel.debug);
+
   logger.debug('Environment:', JSON.stringify(process.env, null, 2));
 
   switch (event.ResourceType) {
     case 'Custom::Athena-WorkGroup': {
-      WorkGroup(event, context, callback, logger);
+      workGroup(event as Event<WorkGroupProperties>, context, callback, logger);
       break;
     }
     case 'Custom::Athena-NamedQuery': {
-      NamedQuery(event, context, callback, logger);
+      namedQuery(
+        event as Event<NamedQueryProperties>,
+        context,
+        callback,
+        logger,
+      );
       break;
     }
     default: {
-      callback(`Unhandled resource type: ${event.ResourceType}`);
+      callback(`Unhandled resource type: ${event.ResourceType as string}`);
       break;
     }
   }

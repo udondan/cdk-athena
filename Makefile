@@ -29,3 +29,8 @@ untag:
 release: tag
 
 re-release: untag tag
+
+eslint:
+	@echo -e "$(TARGET_COLOR)Running eslint $$(npx eslint --version)$(NO_COLOR)"
+	@npx eslint .; \
+	echo "Passed"

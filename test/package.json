@@ -8,14 +8,12 @@
     "build": "tsc",
     "cdk": "cdk"
   },
-  "devDependencies": {
-    "@types/node": "^20.1.0",
-    "aws-cdk": "^2.0.0",
-    "ts-node": "^10.7.0",
-    "typescript": "^5.0.2"
-  },
   "dependencies": {
-    "aws-cdk-lib": "2.x",
-    "cdk-athena": "file:.."
+    "@types/node": "20.11.30",
+    "aws-cdk": "2.133.0",
+    "aws-cdk-lib": "2.133.0",
+    "cdk-athena": "file:..",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.3"
   }
 }

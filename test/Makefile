@@ -8,7 +8,7 @@ install: clean
 	@cd .. && npm i
 	@npm i
 
-build: install lambda
+build: lambda
 	@echo Building application...
 	@npm run build
 

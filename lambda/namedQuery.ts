@@ -1,213 +1,191 @@
-import { CustomResource, Event, LambdaEvent, StandardLogger } from 'aws-cloudformation-custom-resource';
-import { Callback, Context } from 'aws-lambda';
-import { Athena, AWSError } from 'aws-sdk';
+import {
+  Context,
+  Callback,
+  CustomResource,
+  Event,
+  Logger,
+} from 'aws-cloudformation-custom-resource';
+import {
+  AthenaClient,
+  CreateNamedQueryCommand,
+  CreateNamedQueryCommandInput,
+  DeleteNamedQueryCommand,
+  DeleteNamedQueryCommandInput,
+  DeleteNamedQueryCommandOutput,
+  GetNamedQueryCommand,
+  GetNamedQueryCommandInput,
+  GetNamedQueryCommandOutput,
+  NamedQuery,
+  ListNamedQueriesCommand,
+  ListNamedQueriesCommandInput,
+  ListNamedQueriesCommandOutput,
+} from '@aws-sdk/client-athena';
+import { NamedQueryProperties } from './types';
 
-const athena = new Athena();
+const athenaClient = new AthenaClient({});
 
-let log: StandardLogger;
-
-export function NamedQuery(
-  event: LambdaEvent,
+export function namedQuery(
+  event: Event<NamedQueryProperties>,
   context: Context,
   callback: Callback,
-  logger: StandardLogger
+  logger: Logger,
 ) {
-  log = logger;
+  const resource = new CustomResource<NamedQueryProperties>(
+    event,
+    context,
+    callback,
+    createResource,
+    updateResource,
+    deleteResource,
+  );
 
-  new CustomResource(context, callback, logger)
-    .onCreate(Create)
-    .onUpdate(Update)
-    .onDelete(Delete)
-    .handle(event);
+  resource.setLogger(logger);
+  resource.setPhysicalResourceId(resource.event.LogicalResourceId);
 }
 
-function Create(event: Event): Promise<Event> {
-  return new Promise(function (resolve, reject) {
-    event.setPhysicalResourceId(event.LogicalResourceId);
-    createQuery(event.ResourceProperties)
-      .then((id) => {
-        event.addResponseValue('id', id);
-        resolve(event);
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
+async function createResource(
+  resource: CustomResource<NamedQueryProperties>,
+  log: Logger,
+): Promise<void> {
+  await createQuery(resource, log);
 }
 
-function Update(event: Event): Promise<Event> {
-  event.setPhysicalResourceId(event.LogicalResourceId);
-  return new Promise(async function (resolve, reject) {
-    if (
-      JSON.stringify(event.OldResourceProperties) ==
-      JSON.stringify(event.ResourceProperties)
-    ) {
-      log.info(
-        `No changes detected for NamedQuery ${event.ResourceProperties.Name}. Not attempting any update`
-      );
-      return resolve(event);
-    }
-
-    try {
-      const oldQuery = await getNamedQuery(event.OldResourceProperties);
-      createQuery(event.ResourceProperties) //first: create new query
-        .then((id) => {
-          event.addResponseValue('id', id);
-          deleteQuery(oldQuery.NamedQueryId) // then: delete old query
-            .then(() => {
-              resolve(event);
-            })
-            .catch((err) => {
-              reject(err);
-            });
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-function Delete(event: any): Promise<Event> {
-  event.setPhysicalResourceId(event.LogicalResourceId);
-  return new Promise(async function (resolve, reject) {
-    try {
-      const query = await getNamedQuery(event.ResourceProperties);
-      deleteQuery(query.NamedQueryId)
-        .then(() => {
-          resolve(event);
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-function createQuery(resourceProperties: any): Promise<String> {
-  log.info(`Attempting to create Athena NamedQuery ${resourceProperties.Name}`);
-  return new Promise(function (resolve, reject) {
-    var params = {
-      Name: resourceProperties.Name,
-      Database: resourceProperties.Database,
-      QueryString: resourceProperties.QueryString,
-    };
-
-    if (resourceProperties.Description.length) {
-      params['Description'] = resourceProperties.Description;
-    }
-
-    if (resourceProperties.WorkGroup.length) {
-      params['WorkGroup'] = resourceProperties.WorkGroup;
-    }
-
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
-
-    athena.createNamedQuery(
-      params,
-      function (err: AWSError, data: Athena.CreateNamedQueryOutput) {
-        if (err) return reject(err);
-        resolve(data.NamedQueryId);
-      }
+async function updateResource(
+  resource: CustomResource<NamedQueryProperties>,
+  log: Logger,
+): Promise<void> {
+  if (
+    !resource.properties.Name.changed &&
+    !resource.properties.Database.changed &&
+    !resource.properties.QueryString.changed &&
+    (!resource.properties.Description ||
+      !resource.properties.Description.changed) &&
+    (!resource.properties.WorkGroup || //
+      !resource.properties.WorkGroup.changed)
+  ) {
+    log.info(
+      `No changes detected for NamedQuery ${resource.properties.Name.value}. Not attempting any update`,
     );
-  });
+    return;
+  }
+
+  const oldQuery = await getNamedQuery(
+    resource.event.OldResourceProperties!,
+    log,
+  );
+  await createQuery(resource, log);
+  await deleteQuery(oldQuery.NamedQueryId!, log);
 }
 
-function deleteQuery(queryId: string): Promise<Athena.DeleteNamedQueryOutput> {
+async function deleteResource(
+  resource: CustomResource<NamedQueryProperties>,
+  log: Logger,
+): Promise<void> {
+  const query = await getNamedQuery(resource.event.ResourceProperties, log);
+  await deleteQuery(query.NamedQueryId!, log);
+}
+
+async function createQuery(
+  resource: CustomResource<NamedQueryProperties>,
+  log: Logger,
+): Promise<void> {
+  log.info(
+    `Attempting to create Athena NamedQuery ${resource.properties.Name.value}`,
+  );
+
+  const params: CreateNamedQueryCommandInput = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    Name: resource.properties.Name.value,
+    Database: resource.properties.Database.value,
+    QueryString: resource.properties.QueryString.value,
+    /* eslint-enable @typescript-eslint/naming-convention */
+  };
+
+  if (resource.properties.Description?.value?.length) {
+    params.Description = resource.properties.Description.value;
+  }
+
+  if (resource.properties.WorkGroup?.value?.length) {
+    params.WorkGroup = resource.properties.WorkGroup.value;
+  }
+
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  const result = await athenaClient.send(new CreateNamedQueryCommand(params));
+  resource.addResponseValue('id', result.NamedQueryId!);
+}
+
+async function deleteQuery(
+  queryId: string,
+  log: Logger,
+): Promise<DeleteNamedQueryCommandOutput> {
   log.info(`Attempting to delete Athena NamedQuery with ID ${queryId}`);
-  return new Promise(function (resolve, reject) {
-    const params: Athena.DeleteNamedQueryInput = {
-      NamedQueryId: queryId,
-    };
 
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
+  const params: DeleteNamedQueryCommandInput = {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    NamedQueryId: queryId,
+  };
 
-    athena.deleteNamedQuery(
-      params,
-      function (err: AWSError, result: Athena.DeleteNamedQueryOutput) {
-        if (err) return reject(err);
-        resolve(result);
-      }
-    );
-  });
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+  const result = await athenaClient.send(new DeleteNamedQueryCommand(params));
+  return result;
 }
 
-function getWorkGroupQueries(
-  resourceProperties: any
-): Promise<Athena.ListNamedQueriesOutput> {
-  return new Promise(function (resolve, reject) {
-    const params: Athena.ListNamedQueriesInput = {};
-    if (resourceProperties.WorkGroup.length) {
-      params['WorkGroup'] = resourceProperties.WorkGroup;
+async function getWorkGroupQueries(
+  properties: NamedQueryProperties,
+  log: Logger,
+): Promise<ListNamedQueriesCommandOutput> {
+  const params: ListNamedQueriesCommandInput = {};
+  if (properties.WorkGroup?.length) {
+    params.WorkGroup = properties.WorkGroup;
+  }
+
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  const result = await athenaClient.send(new ListNamedQueriesCommand(params));
+  return result;
+}
+
+async function getNamedQuery(
+  properties: NamedQueryProperties,
+  log: Logger,
+): Promise<NamedQuery> {
+  const queries = await getWorkGroupQueries(properties, log);
+  if (
+    typeof queries.NamedQueryIds == 'undefined' ||
+    queries.NamedQueryIds.length == 0
+  ) {
+    throw new Error("Didn't find any queries");
+  }
+
+  let searchWorkGroup = properties.WorkGroup;
+  if (typeof searchWorkGroup == 'undefined' ?? searchWorkGroup == '') {
+    searchWorkGroup = 'primary';
+  }
+
+  for (const id of queries.NamedQueryIds) {
+    const details = await getNamedQueryDetails(id);
+    if (
+      details.NamedQuery!.Name == properties.Name &&
+      details.NamedQuery!.WorkGroup == searchWorkGroup
+    ) {
+      return details.NamedQuery!;
     }
+  }
 
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
-
-    athena.listNamedQueries(
-      params,
-      function (err: AWSError, data: Athena.ListNamedQueriesOutput) {
-        if (err) return reject(err);
-        resolve(data);
-      }
-    );
-  });
+  throw new Error(
+    `No matching query found for workgroup=${properties.WorkGroup} / name=${properties.Name}`,
+  );
 }
 
-function getNamedQuery(resourceProperties: any): Promise<Athena.NamedQuery> {
-  return new Promise(async function (resolve, reject) {
-    try {
-      const queries = await getWorkGroupQueries(resourceProperties);
-      if (
-        typeof queries['NamedQueryIds'] == undefined ||
-        queries.NamedQueryIds.length == 0
-      ) {
-        reject(new Error("Didn't find any queries"));
-      }
+async function getNamedQueryDetails(
+  queryId: string,
+): Promise<GetNamedQueryCommandOutput> {
+  const params: GetNamedQueryCommandInput = {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    NamedQueryId: queryId,
+  };
 
-      let searchWorkGroup = resourceProperties.WorkGroup;
-      if (typeof searchWorkGroup == 'undefined' || searchWorkGroup == '') {
-        searchWorkGroup = 'primary';
-      }
-
-      for (let i = 0; i < queries.NamedQueryIds.length; i++) {
-        const details = await getNamedQueryDetails(queries.NamedQueryIds[i]);
-        if (
-          details.NamedQuery!.Name == resourceProperties.Name &&
-          details.NamedQuery!.WorkGroup == searchWorkGroup
-        ) {
-          return resolve(details.NamedQuery!);
-        }
-      }
-    } catch (err) {
-      reject(err);
-    }
-
-    reject(
-      new Error(
-        `No matching query found for workgroup=${resourceProperties.WorkGroup} / name=${resourceProperties.Name}`
-      )
-    );
-  });
-}
-
-function getNamedQueryDetails(
-  queryId: string
-): Promise<Athena.GetNamedQueryOutput> {
-  return new Promise(function (resolve, reject) {
-    const params: Athena.GetNamedQueryInput = {
-      NamedQueryId: queryId,
-    };
-
-    athena.getNamedQuery(
-      params,
-      function (err: AWSError, data: Athena.GetNamedQueryOutput) {
-        if (err) return reject(err);
-        resolve(data);
-      }
-    );
-  });
+  const result = await athenaClient.send(new GetNamedQueryCommand(params));
+  return result;
 }

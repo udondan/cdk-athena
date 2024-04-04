@@ -25,20 +25,6 @@ export enum EncryptionOption {
   /* eslint-enable @typescript-eslint/naming-convention */
 }
 
-// Converts the first letter of the string to lowercase
-type CamelCase<S extends string> = S extends `${infer F}${infer R}`
-  ? `${Lowercase<F>}${R}`
-  : S;
-
-// Recursive conversion of object keys to camelCase by only changing the first letter of each key
-type ConvertKeysToCamelCase<T> = T extends unknown[]
-  ? { [K in keyof T]: ConvertKeysToCamelCase<T[K]> }
-  : T extends object
-    ? {
-        [K in keyof T as CamelCase<K & string>]: ConvertKeysToCamelCase<T[K]>;
-      }
-    : T;
-
 const resourceType = 'Custom::Athena-WorkGroup';
 const ID = `CFN::Resource::${resourceType}`;
 const createdByTag = 'CreatedByCfnCustomResource';
@@ -90,7 +76,7 @@ export interface WorkGroupProps extends StackProps {
   /**
    * The configuration for the workgroup, which includes the location in Amazon S3 where query results are stored and the encryption option, if any, used for query results. To run the query, you must specify the query results location using one of the ways: either in the workgroup using this setting, or for individual queries (client-side), using ResultConfiguration$OutputLocation. If none of them is set, Athena issues an error that no output location is provided. For more information, see [Query results](https://docs.aws.amazon.com/athena/latest/ug/querying.html).
    */
-  readonly resultConfiguration?: ConvertKeysToCamelCase<WorkGroupResultConfiguration>;
+  readonly resultConfiguration?: ResultConfiguration;
 
   ///**
   // * Athena Engine Version
@@ -98,6 +84,37 @@ export interface WorkGroupProps extends StackProps {
   // * @default - auto
   // */
   //readonly engineVersion?: number;
+}
+
+export interface ResultConfiguration {
+  /**
+   * The location in Amazon S3 where your query results are stored, such as `s3://path/to/query/bucket/`. To run the query, you must specify the query results location using one of the ways: either for individual queries using either this setting (client-side), or in the workgroup, using WorkGroupConfiguration. If none of them is set, Athena issues an error that no output location is provided. For more information, see [Query results](https://docs.aws.amazon.com/athena/latest/ug/querying.html). If workgroup settings override client-side settings, then the query uses the settings specified for the workgroup.
+   */
+  readonly outputLocation?: string;
+
+  /**
+   * If query results are encrypted in Amazon S3, indicates the encryption option used (for example, `SSE-KMS` or `CSE-KMS`) and key information. This is a client-side setting. If workgroup settings override client-side settings, then the query uses the encryption configuration that is specified for the workgroup, and also uses the location for storing query results specified in the workgroup.
+   */
+  readonly encryptionConfiguration?: EncryptionConfiguration;
+}
+
+export interface EncryptionConfiguration {
+  /**
+   * Indicates whether Amazon S3 server-side encryption with Amazon S3-managed keys (`SSE-S3`), server-side encryption with KMS-managed keys (`SSE-KMS`), or client-side encryption with KMS-managed keys (`CSE-KMS`) is used.
+   *
+   * If a query runs in a workgroup and the workgroup overrides client-side settings, then the workgroup's setting for encryption is used. It specifies whether query results must be encrypted, for all queries that run in this workgroup.
+   *
+   * Possible values include:
+   * - `SSE_S3`
+   * - `SSE_KMS`
+   * - `CSE_KMS`
+   */
+  readonly encryptionOption: EncryptionOption;
+
+  /**
+   * For `SSE-KMS` and `CSE-KMS`, this is the KMS key ARN or ID.
+   */
+  readonly kmsKey?: string;
 }
 
 /**

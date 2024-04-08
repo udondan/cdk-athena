@@ -124,7 +124,7 @@ export class WorkGroup extends Construct implements ITaggable {
   /**
    * The lambda function that is created
    */
-  public readonly lambda: aws_lambda.IFunction;
+  public readonly lambdaFunction: aws_lambda.IFunction;
 
   /**
    * Name of the WorkGroup
@@ -166,7 +166,7 @@ export class WorkGroup extends Construct implements ITaggable {
     this.tags.setTag(createdByTag, ID);
 
     const stack = Stack.of(this);
-    this.lambda = ensureLambda(this);
+    this.lambdaFunction = ensureLambda(this);
     this.name = props.name;
 
     const workGroupProperties: WorkGroupProperties = {
@@ -198,7 +198,7 @@ export class WorkGroup extends Construct implements ITaggable {
       this,
       `Athena-WorkGroup-${this.name}`,
       {
-        serviceToken: this.lambda.functionArn,
+        serviceToken: this.lambdaFunction.functionArn,
         resourceType: resourceType,
         properties: workGroupProperties,
       },

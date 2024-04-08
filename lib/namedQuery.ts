@@ -43,7 +43,7 @@ export class NamedQuery extends Construct {
   /**
    * The lambda function that is created
    */
-  public readonly lambda: aws_lambda.IFunction;
+  public readonly lambdaFunction: aws_lambda.IFunction;
   /**
    * Name of the query
    */
@@ -60,7 +60,7 @@ export class NamedQuery extends Construct {
   constructor(scope: Construct, id: string, props: NamedQueryProps) {
     super(scope, id);
 
-    this.lambda = ensureLambda(this);
+    this.lambdaFunction = ensureLambda(this);
     this.name = props.name;
 
     const namedQueryProperties: NamedQueryProperties = {
@@ -85,7 +85,7 @@ export class NamedQuery extends Construct {
         .replace(/\s+/g, '-')
         .replace(/[a-z0-9_-]+/gi, '')}`,
       {
-        serviceToken: this.lambda.functionArn,
+        serviceToken: this.lambdaFunction.functionArn,
         resourceType: resourceType,
         properties: namedQueryProperties,
       },

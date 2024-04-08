@@ -1,4 +1,12 @@
-import { aws_kms, aws_s3, CfnOutput, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
+import {
+  aws_kms,
+  aws_s3,
+  CfnOutput,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+  Tags,
+} from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 import { EncryptionOption, NamedQuery, WorkGroup } from '../../lib';
@@ -24,7 +32,7 @@ export class TestStack extends Stack {
       resultConfiguration: {
         outputLocation: `s3://${bucket.bucketName}/data`,
         encryptionConfiguration: {
-          encryptionOption: EncryptionOption.CSE_KMS,
+          encryptionOption: EncryptionOption.SSE_KMS,
           kmsKey: 'aws/s3',
         },
       },

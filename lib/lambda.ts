@@ -25,9 +25,11 @@ export function ensureLambda(scope: Construct): aws_lambda.Function {
         actions: ['athena:CreateWorkGroup', 'athena:TagResource'],
         resources: ['*'],
         conditions: {
+          /* eslint-disable @typescript-eslint/naming-convention */
           StringLike: {
             'aws:RequestTag/CreatedByCfnCustomResource': `${ID}-WorkGroup`,
           },
+          /* eslint-enable @typescript-eslint/naming-convention */
         },
       }),
       new aws_iam.PolicyStatement({
@@ -39,9 +41,11 @@ export function ensureLambda(scope: Construct): aws_lambda.Function {
         ],
         resources: ['*'],
         conditions: {
+          /* eslint-disable @typescript-eslint/naming-convention */
           StringLike: {
             'aws:ResourceTag/CreatedByCfnCustomResource': `${ID}-WorkGroup`,
           },
+          /* eslint-enable @typescript-eslint/naming-convention */
         },
       }),
       new aws_iam.PolicyStatement({
@@ -63,7 +67,7 @@ export function ensureLambda(scope: Construct): aws_lambda.Function {
     managedPolicies: [
       policy,
       aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
-        'service-role/AWSLambdaBasicExecutionRole'
+        'service-role/AWSLambdaBasicExecutionRole',
       ),
     ],
   });

@@ -1,9 +1,9 @@
 export {
-  EncryptionConfiguration,
   EncryptionOption,
-  ResultConfiguration,
   WorkGroupProps,
   WorkGroup,
+  ResultConfiguration,
+  EncryptionConfiguration,
 } from './workGroup';
 
 export { NamedQuery, NamedQueryProps } from './namedQuery';

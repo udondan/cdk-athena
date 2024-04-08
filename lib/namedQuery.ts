@@ -1,8 +1,8 @@
 import { aws_lambda, CustomResource, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-
 import { ensureLambda } from './lambda';
 import { WorkGroup } from './workGroup';
+import { NamedQueryProperties } from '../lambda/types';
 
 const resourceType = 'Custom::Athena-NamedQuery';
 
@@ -63,22 +63,20 @@ export class NamedQuery extends Construct {
     this.lambda = ensureLambda(this);
     this.name = props.name;
 
-    const queryProps: any = {
-      serviceToken: this.lambda.functionArn,
-      resourceType: resourceType,
-      properties: {
-        Name: this.name,
-        Description: props.desc || '',
-        Database: props.database,
-        QueryString: props.queryString,
-        WorkGroup: '',
-      },
+    const namedQueryProperties: NamedQueryProperties = {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      Name: this.name,
+      Description: props.desc ?? '',
+      Database: props.database,
+      QueryString: props.queryString,
+      WorkGroup: '',
+      /* eslint-enable @typescript-eslint/naming-convention */
     };
 
     if (typeof props.workGroup === 'string') {
-      queryProps.properties.WorkGroup = props.workGroup!;
+      namedQueryProperties.WorkGroup = props.workGroup!;
     } else if (typeof props.workGroup !== 'undefined') {
-      queryProps.properties.WorkGroup = (props.workGroup! as WorkGroup).name;
+      namedQueryProperties.WorkGroup = props.workGroup.name;
     }
 
     const namedQuery = new CustomResource(
@@ -86,7 +84,11 @@ export class NamedQuery extends Construct {
       `Athena-NamedQuery-${props.name
         .replace(/\s+/g, '-')
         .replace(/[a-z0-9_-]+/gi, '')}`,
-      queryProps
+      {
+        serviceToken: this.lambda.functionArn,
+        resourceType: resourceType,
+        properties: namedQueryProperties,
+      },
     );
 
     if (['undefined', 'string'].indexOf(typeof props.workGroup) < 0) {

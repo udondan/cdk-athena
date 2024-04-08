@@ -1,346 +1,335 @@
-import { CustomResource, Event, LambdaEvent, StandardLogger } from 'aws-cloudformation-custom-resource';
-import { Callback, Context } from 'aws-lambda';
-import { Athena, AWSError } from 'aws-sdk';
+import {
+  Context,
+  Callback,
+  CustomResource,
+  Event,
+  Logger,
+} from 'aws-cloudformation-custom-resource';
+import {
+  AthenaClient,
+  CreateWorkGroupCommand,
+  CreateWorkGroupCommandInput,
+  TagResourceCommand,
+  TagResourceCommandInput,
+  Tag,
+  UntagResourceCommand,
+  UntagResourceCommandInput,
+  GetWorkGroupCommand,
+  GetWorkGroupCommandInput,
+  GetWorkGroupCommandOutput,
+  DeleteWorkGroupCommand,
+  DeleteWorkGroupCommandInput,
+  UpdateWorkGroupCommand,
+  UpdateWorkGroupCommandInput,
+  ResultConfigurationUpdates,
+} from '@aws-sdk/client-athena';
+import { WorkGroupProperties } from './types';
 
-const athena = new Athena();
+const athenaClient = new AthenaClient({});
 
-let log: StandardLogger;
-
-export function WorkGroup(
-  event: LambdaEvent,
+export function workGroup(
+  event: Event<WorkGroupProperties>,
   context: Context,
   callback: Callback,
-  logger: StandardLogger
+  logger: Logger,
 ) {
-  log = logger;
-  new CustomResource(context, callback, logger)
-    .onCreate(Create)
-    .onUpdate(Update)
-    .onDelete(Delete)
-    .handle(event);
-}
-
-function Create(event: Event): Promise<Event> {
-  log.info(
-    `Attempting to create Athena WorkGroup ${event.ResourceProperties.Name}`
+  const resource = new CustomResource<WorkGroupProperties>(
+    event,
+    context,
+    callback,
+    createResource,
+    updateResource,
+    deleteResource,
   );
-  return new Promise(function (resolve, reject) {
-    const params: Athena.CreateWorkGroupInput = {
-      Name: event.ResourceProperties.Name,
-      Description: event.ResourceProperties.Description,
-      Configuration: {
-        EnforceWorkGroupConfiguration:
-          event.ResourceProperties.EnforceWorkGroupConfiguration == 'true',
-        PublishCloudWatchMetricsEnabled:
-          event.ResourceProperties.PublishCloudWatchMetricsEnabled == 'true',
-        RequesterPaysEnabled:
-          event.ResourceProperties.RequesterPaysEnabled == 'true',
 
-        // docs say yes, api says no  ¯\_(ツ)_/¯
-        //EngineVersion: {
-        //  SelectedEngineVersion:
-        //    event.ResourceProperties.EngineVersion || 'auto',
-        //},
-      },
-      Tags: makeTags(event, event.ResourceProperties),
-    };
+  resource.addResponseValue('ARN', resource.properties.Arn.value);
 
-    if ('ResultConfiguration' in event.ResourceProperties) {
-      params.Configuration['ResultConfiguration'] = capKeys(
-        event.ResourceProperties.ResultConfiguration
-      );
-    }
+  resource.setLogger(logger);
+}
 
-    if ('BytesScannedCutoffPerQuery' in event.ResourceProperties) {
-      params.Configuration['BytesScannedCutoffPerQuery'] = parseInt(
-        event.ResourceProperties.BytesScannedCutoffPerQuery
-      );
-    }
+async function createResource(
+  resource: CustomResource<WorkGroupProperties>,
+  log: Logger,
+): Promise<void> {
+  log.info(
+    `Attempting to create Athena WorkGroup ${resource.properties.Name.value}`,
+  );
 
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
+  const params: CreateWorkGroupCommandInput = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    Name: resource.properties.Name.value,
+    Description: resource.properties.Description.value,
+    Configuration: {
+      EnforceWorkGroupConfiguration:
+        resource.properties.EnforceWorkGroupConfiguration?.value == 'true',
+      PublishCloudWatchMetricsEnabled:
+        resource.properties.PublishCloudWatchMetricsEnabled?.value == 'true',
+      RequesterPaysEnabled:
+        resource.properties.RequesterPaysEnabled?.value == 'true',
 
-    athena.createWorkGroup(
-      params,
-      function (err: AWSError, _: Athena.CreateWorkGroupOutput) {
-        if (err) return reject(err);
-        event.addResponseValue('ARN', event.ResourceProperties.Arn);
-        resolve(event);
-      }
+      // @TODO: this should be working now in SDK v3
+      // docs say yes, api says no  ¯\_(ツ)_/¯
+      //EngineVersion: {
+      //  SelectedEngineVersion:
+      //    event.ResourceProperties.EngineVersion ?? 'auto',
+      //},
+    },
+    Tags: makeTags(resource, resource.properties.Tags.value),
+    /* eslint-enable @typescript-eslint/naming-convention */
+  };
+
+  if (resource.properties.ResultConfiguration) {
+    params.Configuration!.ResultConfiguration =
+      resource.properties.ResultConfiguration.value!;
+  }
+
+  if (
+    typeof resource.properties.BytesScannedCutoffPerQuery?.value !== 'undefined'
+  ) {
+    params.Configuration!.BytesScannedCutoffPerQuery = parseInt(
+      resource.properties.BytesScannedCutoffPerQuery.value,
     );
-  });
+  }
+
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  const result = await athenaClient.send(new CreateWorkGroupCommand(params));
+  log.debug(JSON.stringify(result, null, 2));
 }
 
-function Update(event: Event): Promise<Event> {
-  return new Promise(function (resolve, reject) {
-    updateWorkGroup(event)
-      .then(updateWorkGroupAddTags)
-      .then(updateWorkGroupRemoveTags)
-      .then(function (data) {
-        event.addResponseValue('ARN', event.ResourceProperties.Arn);
-        resolve(data);
-      })
-      .catch(function (err: Error) {
-        reject(err);
-      });
-  });
+async function updateResource(
+  resource: CustomResource<WorkGroupProperties>,
+  log: Logger,
+): Promise<void> {
+  await updateWorkGroup(resource, log);
+  await updateWorkGroupAddTags(resource, log);
+  await updateWorkGroupRemoveTags(resource, log);
 }
 
-function getWorkGroup(name: string): Promise<Athena.GetWorkGroupOutput> {
+async function getWorkGroup(
+  name: string,
+  log: Logger,
+): Promise<GetWorkGroupCommandOutput> {
   log.info(`Fetching details of Athena WorkGroup ${name}`);
-  return new Promise(function (resolve, reject) {
-    const params = {
-      WorkGroup: name,
-    };
 
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
+  const params: GetWorkGroupCommandInput = {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    WorkGroup: name,
+  };
 
-    athena.getWorkGroup(
-      params,
-      function (err: AWSError, data: Athena.GetWorkGroupOutput) {
-        if (err) return reject(err);
-        resolve(data);
-      }
-    );
-  });
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  const result = await athenaClient.send(new GetWorkGroupCommand(params));
+  return result;
 }
 
-function updateWorkGroup(event: Event): Promise<Event> {
+async function updateWorkGroup(
+  resource: CustomResource<WorkGroupProperties>,
+  log: Logger,
+): Promise<void> {
   log.info(
-    `Attempting to update Athena WorkGroup ${event.ResourceProperties.Name}`
+    `Attempting to update Athena WorkGroup ${resource.properties.Name.value}`,
   );
-  return new Promise(async function (resolve, reject) {
-    try {
-      var current: Athena.GetWorkGroupOutput = await getWorkGroup(
-        event.ResourceProperties.Name
-      );
-    } catch (err) {
-      reject(
-        `Unable to get WorkGroup of name ${event.ResourceProperties.Name}: ${err}`
-      );
-    }
 
-    log.debug('Current WorkGroup', JSON.stringify(current, null, 2));
+  const current = await getWorkGroup(resource.properties.Name.value, log);
 
-    const params = {
-      WorkGroup: event.ResourceProperties.Name,
-      Description: event.ResourceProperties.Description,
-      ConfigurationUpdates: {
-        EnforceWorkGroupConfiguration:
-          event.ResourceProperties.EnforceWorkGroupConfiguration == 'true',
-        PublishCloudWatchMetricsEnabled:
-          event.ResourceProperties.PublishCloudWatchMetricsEnabled == 'true',
-        RequesterPaysEnabled:
-          event.ResourceProperties.RequesterPaysEnabled == 'true',
+  log.debug('Current WorkGroup', JSON.stringify(current, null, 2));
 
-        // docs say yes, api says no  ¯\_(ツ)_/¯
-        //EngineVersion: {
-        //  SelectedEngineVersion:
-        //    event.ResourceProperties.EngineVersion || 'auto',
-        //},
-      },
-    };
+  const params: UpdateWorkGroupCommandInput = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    WorkGroup: resource.properties.Name.value,
+    Description: resource.properties.Description.value,
+    ConfigurationUpdates: {
+      EnforceWorkGroupConfiguration:
+        resource.properties.EnforceWorkGroupConfiguration?.value == 'true',
+      PublishCloudWatchMetricsEnabled:
+        resource.properties.PublishCloudWatchMetricsEnabled?.value == 'true',
+      RequesterPaysEnabled:
+        resource.properties.RequesterPaysEnabled?.value == 'true',
+      /* eslint-enable @typescript-eslint/naming-convention */
 
-    const hasOutputLocation =
-      'OutputLocation' in current.WorkGroup.Configuration.ResultConfiguration;
+      // @TODO: this should be working now in SDK v3
+      // docs say yes, api says no  ¯\_(ツ)_/¯
+      //EngineVersion: {
+      //  SelectedEngineVersion:
+      //    event.ResourceProperties.EngineVersion ?? 'auto',
+      //},
+    },
+  };
 
-    const hasEncryptionConfiguration =
-      'EncryptionConfiguration' in
-      current.WorkGroup.Configuration.ResultConfiguration;
+  const hasOutputLocation =
+    !!current.WorkGroup?.Configuration?.ResultConfiguration?.OutputLocation;
 
-    const hasBytesScannedCutoffPerQuery =
-      'BytesScannedCutoffPerQuery' in current.WorkGroup.Configuration;
+  const hasEncryptionConfiguration =
+    !!current.WorkGroup?.Configuration?.ResultConfiguration
+      ?.EncryptionConfiguration;
 
-    if ('BytesScannedCutoffPerQuery' in event.ResourceProperties) {
-      params.ConfigurationUpdates['BytesScannedCutoffPerQuery'] = parseInt(
-        event.ResourceProperties.BytesScannedCutoffPerQuery
-      );
-    } else if (
-      hasBytesScannedCutoffPerQuery &&
-      !('BytesScannedCutoffPerQuery' in event.ResourceProperties)
-    ) {
-      params.ConfigurationUpdates['RemoveBytesScannedCutoffPerQuery'] = true;
-    }
+  const hasBytesScannedCutoffPerQuery =
+    !!current.WorkGroup?.Configuration?.BytesScannedCutoffPerQuery;
 
-    let resultConfig = {};
-    if ('ResultConfiguration' in event.ResourceProperties) {
-      resultConfig = capKeys(event.ResourceProperties.ResultConfiguration);
-    }
-
-    if (
-      hasEncryptionConfiguration &&
-      !('EncryptionConfiguration' in resultConfig)
-    ) {
-      resultConfig['RemoveEncryptionConfiguration'] = true;
-    }
-
-    if (hasOutputLocation && !('OutputLocation' in resultConfig)) {
-      resultConfig['RemoveOutputLocation'] = true;
-    }
-
-    if (Object.keys(resultConfig).length) {
-      params.ConfigurationUpdates['ResultConfigurationUpdates'] = resultConfig;
-    }
-
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
-
-    athena.updateWorkGroup(
-      params,
-      function (err: AWSError, _: Athena.UpdateWorkGroupOutput) {
-        if (err) return reject(err);
-        resolve(event);
-      }
+  if (resource.properties.BytesScannedCutoffPerQuery) {
+    params.ConfigurationUpdates!.BytesScannedCutoffPerQuery = parseInt(
+      resource.properties.BytesScannedCutoffPerQuery.value!,
     );
-  });
+  } else if (
+    hasBytesScannedCutoffPerQuery &&
+    !resource.properties.BytesScannedCutoffPerQuery
+  ) {
+    params.ConfigurationUpdates!.RemoveBytesScannedCutoffPerQuery = true;
+  }
+
+  if (resource.properties.ResultConfiguration?.value) {
+    const resultConfig: ResultConfigurationUpdates =
+      resource.properties.ResultConfiguration?.value;
+
+    if (hasEncryptionConfiguration && !resultConfig.EncryptionConfiguration) {
+      resultConfig.RemoveEncryptionConfiguration = true;
+    }
+
+    if (hasOutputLocation && !resultConfig.OutputLocation) {
+      resultConfig.RemoveOutputLocation = true;
+    }
+
+    params.ConfigurationUpdates!.ResultConfigurationUpdates = resultConfig;
+  }
+
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  await athenaClient.send(new UpdateWorkGroupCommand(params));
 }
 
-function updateWorkGroupAddTags(event: Event): Promise<Event> {
+async function updateWorkGroupAddTags(
+  resource: CustomResource<WorkGroupProperties>,
+  log: Logger,
+): Promise<void> {
   log.info(
-    `Attempting to update tags for Athena WorkGroup ${event.ResourceProperties.Name}`
+    `Attempting to update tags for Athena WorkGroup ${resource.properties.Name.value}`,
   );
-  return new Promise(function (resolve, reject) {
-    const oldTags = makeTags(event, event.OldResourceProperties);
-    const newTags = makeTags(event, event.ResourceProperties);
-    if (JSON.stringify(oldTags) == JSON.stringify(newTags)) {
-      log.info(
-        `No changes of tags detected for WorkGroup ${event.ResourceProperties.Name}. Not attempting any update`
-      );
-      return resolve(event);
-    }
 
-    const params = {
-      ResourceARN: event.ResourceProperties.Arn,
-      Tags: newTags,
-    };
-
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
-
-    athena.tagResource(
-      params,
-      function (err: AWSError, _: Athena.TagResourceOutput) {
-        if (err) return reject(err);
-        resolve(event);
-      }
+  if (!resource.properties.Tags.changed) {
+    log.info(
+      `No changes of tags detected for WorkGroup ${resource.properties.Name.value}. Not attempting any update`,
     );
-  });
+    return;
+  }
+
+  const newTags = makeTags(resource, resource.properties.Tags.value);
+
+  const params: TagResourceCommandInput = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    ResourceARN: resource.properties.Arn.value,
+    Tags: newTags,
+    /* eslint-enable @typescript-eslint/naming-convention */
+  };
+
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  await athenaClient.send(new TagResourceCommand(params));
 }
 
-function updateWorkGroupRemoveTags(event: Event): Promise<Event> {
+async function updateWorkGroupRemoveTags(
+  resource: CustomResource<WorkGroupProperties>,
+  log: Logger,
+): Promise<void> {
   log.info(
-    `Attempting to remove some tags for Athena WorkGroup ${event.ResourceProperties.Name}`
+    `Attempting to remove some tags for Athena WorkGroup ${resource.properties.Name.value}`,
   );
-  return new Promise(function (resolve, reject) {
-    resolve(event);
-    const oldTags = makeTags(event, event.OldResourceProperties);
-    const newTags = makeTags(event, event.ResourceProperties);
-    const tagsToRemove = getMissingTags(oldTags, newTags);
-    if (
-      JSON.stringify(oldTags) == JSON.stringify(newTags) ||
-      !tagsToRemove.length
-    ) {
-      log.info(
-        `No changes of tags detected for document ${event.ResourceProperties.Name}. Not attempting any update`
-      );
-      return resolve(event);
-    }
 
-    log.info(`Will remove the following tags: ${JSON.stringify(tagsToRemove)}`);
-
-    const params = {
-      ResourceARN: event.ResourceProperties.Arn,
-      TagKeys: tagsToRemove,
-    };
-
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
-
-    athena.untagResource(
-      params,
-      function (err: AWSError, _: Athena.UntagResourceOutput) {
-        if (err) return reject(err);
-        resolve(event);
-      }
+  if (!resource.properties.Tags.changed) {
+    log.info(
+      `No changes of tags detected for WorkGroup ${resource.properties.Name.value}. Not attempting any update`,
     );
-  });
+    return;
+  }
+
+  const oldTags = makeTags(resource, resource.properties.Tags.before);
+  const newTags = makeTags(resource, resource.properties.Tags.value);
+  const tagsToRemove = getMissingTags(oldTags, newTags);
+  if (!tagsToRemove.length) {
+    log.info('No tags to remove');
+    return;
+  }
+
+  log.info(`Will remove the following tags: ${JSON.stringify(tagsToRemove)}`);
+
+  const params: UntagResourceCommandInput = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    ResourceARN: resource.properties.Arn.value,
+    TagKeys: tagsToRemove,
+    /* eslint-enable @typescript-eslint/naming-convention */
+  };
+
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  await athenaClient.send(new UntagResourceCommand(params));
 }
 
-function Delete(event: any): Promise<Event> {
+async function deleteResource(
+  resource: CustomResource<WorkGroupProperties>,
+  log: Logger,
+): Promise<void> {
   log.info(
-    `Attempting to delete Athena WorkGroup ${event.ResourceProperties.Name}`
+    `Attempting to delete Athena WorkGroup ${resource.properties.Name.value}`,
   );
-  return new Promise(function (resolve, reject) {
-    const params: Athena.DeleteWorkGroupInput = {
-      WorkGroup: event.ResourceProperties.Name,
-      RecursiveDeleteOption: true,
-    };
 
-    log.debug('Sending payload', JSON.stringify(params, null, 2));
+  const params: DeleteWorkGroupCommandInput = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    WorkGroup: resource.properties.Name.value,
+    RecursiveDeleteOption: true,
+    /* eslint-enable @typescript-eslint/naming-convention */
+  };
 
-    athena.deleteWorkGroup(
-      params,
-      function (err: AWSError, _: Athena.DeleteWorkGroupOutput) {
-        if (err) return reject(err);
-        resolve(event);
-      }
-    );
-  });
+  log.debug('Sending payload', JSON.stringify(params, null, 2));
+
+  await athenaClient.send(new DeleteWorkGroupCommand(params));
 }
 
-function makeTags(event: Event, properties: any): Athena.TagList {
-  const tags: Athena.TagList = [
+function makeTags(
+  resource: CustomResource<WorkGroupProperties>,
+  eventTags?: Record<string, string>,
+): Tag[] {
+  const tags: Tag[] = [
+    /* eslint-disable @typescript-eslint/naming-convention */
     {
       Key: 'aws-cloudformation:stack-id',
-      Value: event.StackId,
+      Value: resource.event.StackId,
     },
     {
       Key: 'aws-cloudformation:stack-name',
-      Value: properties.StackName,
+      Value: resource.properties.StackName.value,
     },
     {
       Key: 'aws-cloudformation:logical-id',
-      Value: event.LogicalResourceId,
+      Value: resource.event.LogicalResourceId,
     },
+    /* eslint-enable @typescript-eslint/naming-convention */
   ];
-  if ('Tags' in properties) {
-    Object.keys(properties.Tags).forEach(function (key: string) {
+  if (eventTags && Object.keys(eventTags).length) {
+    Object.keys(eventTags).forEach(function (key: string) {
       tags.push({
+        /* eslint-disable @typescript-eslint/naming-convention */
         Key: key,
-        Value: properties.Tags[key],
+        Value: eventTags[key],
+        /* eslint-enable @typescript-eslint/naming-convention */
       });
     });
   }
   return tags;
 }
 
-function getMissingTags(
-  oldTags: Athena.TagList,
-  newTags: Athena.TagList
-): string[] {
+function getMissingTags(oldTags: Tag[], newTags: Tag[]): string[] {
   const missing = oldTags.filter(missingTags(newTags));
-  return missing.map(function (tag: Athena.Tag) {
-    return tag.Key;
+  return missing.map(function (tag: Tag) {
+    return tag.Key!;
   });
 }
 
-function missingTags(newTags: Athena.TagList) {
-  return (currentTag: Athena.Tag) => {
+function missingTags(newTags: Tag[]) {
+  return (currentTag: Tag) => {
     return (
-      newTags.filter((newTag: any) => {
+      newTags.filter((newTag: Tag) => {
         return newTag.Key == currentTag.Key;
       }).length == 0
     );
   };
-}
-
-function capKeys(input: any) {
-  const output = {};
-  for (let [key, value] of Object.entries(input)) {
-    if (!!value && value.constructor === Object) {
-      value = capKeys(value);
-    }
-    output[upperFirst(key)] = value;
-  }
-  return output;
-}
-
-function upperFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -11,18 +11,23 @@ import {
   TagType,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-
 import { ensureLambda } from './lambda';
+import {
+  WorkGroupProperties,
+  WorkGroupResultConfiguration,
+} from '../lambda/types';
+
+export enum EncryptionOption {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  SSE_S3 = 'SSE_S3',
+  SSE_KMS = 'SSE_KMS',
+  CSE_KMS = 'CSE_KMS',
+  /* eslint-enable @typescript-eslint/naming-convention */
+}
 
 const resourceType = 'Custom::Athena-WorkGroup';
 const ID = `CFN::Resource::${resourceType}`;
 const createdByTag = 'CreatedByCfnCustomResource';
-
-export enum EncryptionOption {
-  SSE_S3 = 'SSE_S3',
-  SSE_KMS = 'SSE_KMS',
-  CSE_KMS = 'CSE_KMS',
-}
 
 /**
  * Definition of the Athena WorkGroup
@@ -147,13 +152,13 @@ export class WorkGroup extends Construct implements ITaggable {
       props.bytesScannedCutoffPerQuery < 10000000
     ) {
       Annotations.of(this).addError(
-        `Parameter bytesScannedCutoffPerQuery must have value greater than or equal to 10000000. Got ${props.bytesScannedCutoffPerQuery}`
+        `Parameter bytesScannedCutoffPerQuery must have value greater than or equal to 10000000. Got ${props.bytesScannedCutoffPerQuery}`,
       );
     }
 
     if (!props.name.match(/^[a-zA-Z0-9._-]{1,128}$/)) {
       Annotations.of(this).addError(
-        `The WorkGroup name must match /^[a-zA-Z0-9._-]{1,128}$/. Got "${props.name}"`
+        `The WorkGroup name must match /^[a-zA-Z0-9._-]{1,128}$/. Got "${props.name}"`,
       );
     }
 
@@ -164,32 +169,57 @@ export class WorkGroup extends Construct implements ITaggable {
     this.lambda = ensureLambda(this);
     this.name = props.name;
 
+    const workGroupProperties: WorkGroupProperties = {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      Name: this.name,
+      Description: props.desc ?? '',
+      BytesScannedCutoffPerQuery:
+        props.bytesScannedCutoffPerQuery?.toString() ?? '',
+      EnforceWorkGroupConfiguration: props.enforceWorkGroupConfiguration
+        ? 'true'
+        : 'false',
+      PublishCloudWatchMetricsEnabled: props.publishCloudWatchMetricsEnabled
+        ? 'true'
+        : 'false',
+      RequesterPaysEnabled: props.requesterPaysEnabled ? 'true' : 'false',
+      //EngineVersion: props.engineVersion,
+      ResultConfiguration: capKeys(
+        props.resultConfiguration,
+      ) as WorkGroupResultConfiguration,
+      StackName: stack.stackName,
+      Arn: `arn:aws:athena:${Aws.REGION}:${Aws.ACCOUNT_ID}:workgroup/${this.name}`,
+      Tags: Lazy.any({
+        produce: () => this.tags.renderTags() as Record<string, string>,
+      }) as unknown as Record<string, string>,
+      /* eslint-enable @typescript-eslint/naming-convention */
+    };
+
     const workGroup = new CustomResource(
       this,
       `Athena-WorkGroup-${this.name}`,
       {
         serviceToken: this.lambda.functionArn,
         resourceType: resourceType,
-        properties: {
-          Name: this.name,
-          Description: props.desc || '',
-          BytesScannedCutoffPerQuery: props.bytesScannedCutoffPerQuery,
-          EnforceWorkGroupConfiguration:
-            props.enforceWorkGroupConfiguration || false,
-          PublishCloudWatchMetricsEnabled:
-            props.publishCloudWatchMetricsEnabled || false,
-          RequesterPaysEnabled: props.requesterPaysEnabled || false,
-          //EngineVersion: props.engineVersion,
-          ResultConfiguration: props.resultConfiguration,
-          StackName: stack.stackName,
-          Arn: `arn:aws:athena:${Aws.REGION}:${Aws.ACCOUNT_ID}:workgroup/${this.name}`,
-          Tags: Lazy.any({
-            produce: () => this.tags.renderTags(),
-          }),
-        },
-      }
+        properties: workGroupProperties,
+      },
     );
 
     this.arn = workGroup.getAttString('ARN');
   }
+}
+
+function capKeys<T extends { [K in keyof T]: unknown }>(input: T): T {
+  const output: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(input)) {
+    let item = value as T;
+    if (!!item && item.constructor === Object) {
+      item = capKeys<T>(item);
+    }
+    output[upperFirst(key)] = item;
+  }
+  return output as T;
+}
+
+function upperFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

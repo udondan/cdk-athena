@@ -74,7 +74,7 @@ export class NamedQuery extends Construct {
     };
 
     if (typeof props.workGroup === 'string') {
-      namedQueryProperties.WorkGroup = props.workGroup!;
+      namedQueryProperties.WorkGroup = props.workGroup;
     } else if (typeof props.workGroup !== 'undefined') {
       namedQueryProperties.WorkGroup = props.workGroup.name;
     }

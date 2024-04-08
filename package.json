@@ -50,8 +50,8 @@
   },
   "devDependencies": {
     "@aws-sdk/client-athena": "3.540.0",
-    "@swc/core": "1.4.8",
-    "@swc/helpers": "0.5.7",
+    "@swc/core": "1.4.12",
+    "@swc/helpers": "0.5.8",
     "@types/js-yaml": "4.0.9",
     "@types/node": "20.11.30",
     "@typescript-eslint/eslint-plugin": "7.3.1",

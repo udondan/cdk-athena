@@ -14,6 +14,6 @@
     "aws-cdk-lib": "2.136.0",
     "cdk-athena": "file:..",
     "ts-node": "10.9.2",
-    "typescript": "5.4.3"
+    "typescript": "5.4.4"
   }
 }

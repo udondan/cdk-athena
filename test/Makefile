@@ -6,7 +6,7 @@ clean:
 install: package
 	@echo Installing dependencies...
 	@cd .. && make install
-	@npm clean-install --prefer-offline --cache ../.npm
+	@npm install ../cdk-athena-test.tgz --prefer-offline --cache ../.npm
 	@npm list
 
 build: lambda

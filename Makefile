@@ -15,7 +15,6 @@ clean:
 
 install: clean
 	@npm i
-	@cd test && npm i
 
 eslint:
 	@echo -e "$(TARGET_COLOR)Running eslint $$(npx eslint --version)$(NO_COLOR)"

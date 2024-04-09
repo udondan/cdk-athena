@@ -33,6 +33,6 @@ package:
 	@echo Building npm tgz...
 	@ \
 	cd .. && \
-	npx tsc && \
+	make package && \
 	npm pack && \
 	mv cdk-athena-*.tgz cdk-athena-test.tgz

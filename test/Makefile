@@ -29,6 +29,7 @@ lambda:
 	@../lambda/build
 
 package:
+	@echo Building npm tgz...
 	@ \
 	cd .. && \
 	npm pack && \

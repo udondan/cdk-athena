@@ -61,6 +61,7 @@ export class TestStack extends Stack {
           resources[1].arn
       `,
       workGroup: workgroup,
+      logLevel: LogLevel.DEBUG,
     });
 
     new CfnOutput(this, 'WorkGroupArn', {

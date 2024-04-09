@@ -9,6 +9,8 @@ package: build
 
 test: build
 	@lambda/build
+	@npm pack
+	@mv cdk-athena-*.tgz cdk-athena-test.tgz
 	@cd test && npm run build && cdk deploy
 
 clean:

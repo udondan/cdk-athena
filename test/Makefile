@@ -29,5 +29,7 @@ lambda:
 	@../lambda/build
 
 package:
-	@npm pack
-	@mv cdk-athena-*.tgz cdk-athena-test.tgz
+	@ \
+	cd .. && \
+	npm pack && \
+	mv cdk-athena-*.tgz cdk-athena-test.tgz

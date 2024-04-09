@@ -7,3 +7,4 @@ export {
 } from './workGroup';
 
 export { NamedQuery, NamedQueryProps } from './namedQuery';
+export { LogLevel } from '../lambda/types';

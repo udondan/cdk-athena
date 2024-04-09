@@ -5,11 +5,7 @@
   "license": "Apache-2.0",
   "author": {
     "name": "Daniel Schroeder",
-    "url": "https://www.udondan.com/",
-    "twitter": "udondan"
-  },
-  "awscdkio": {
-    "twitter": "udondan"
+    "url": "https://www.udondan.com/"
   },
   "homepage": "https://github.com/udondan/cdk-athena",
   "repository": {
@@ -37,9 +33,6 @@
     "prepackage": "jsii && lambda/build"
   },
   "jsii": {
-    "excludeTypescript": [
-      "lambda"
-    ],
     "outdir": "dist",
     "targets": {
       "python": {

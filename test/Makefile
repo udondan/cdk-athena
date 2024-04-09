@@ -3,10 +3,11 @@ clean:
 	@rm -rf node_modules package-lock.json
 	@find .. \( -name "*.js" -o -name "*.d.ts" \) -type f -delete
 
-install: clean package
+install: package
 	@echo Installing dependencies...
-	@cd .. && npm i
-	@npm i
+	@cd .. && make install
+	@npm clean-install --prefer-offline --cache ../.npm
+	@npm list
 
 build: lambda
 	@echo Building application...

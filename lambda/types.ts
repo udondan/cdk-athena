@@ -1,3 +1,12 @@
+export enum LogLevel {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  ERROR,
+  WARN,
+  INFO,
+  DEBUG,
+  /* eslint-enable @typescript-eslint/naming-convention */
+}
+
 export interface NamedQueryProperties {
   /* eslint-disable @typescript-eslint/naming-convention */
   Name: string;
@@ -5,6 +14,7 @@ export interface NamedQueryProperties {
   QueryString: string;
   Description?: string;
   WorkGroup?: string;
+  LogLevel?: LogLevel;
   /* eslint-enable @typescript-eslint/naming-convention */
 }
 
@@ -38,5 +48,6 @@ export interface WorkGroupProperties {
   BytesScannedCutoffPerQuery?: string;
   StackName: string;
   Tags: Record<string, string>;
+  LogLevel?: LogLevel;
   /* eslint-enable @typescript-eslint/naming-convention */
 }

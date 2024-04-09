@@ -15,6 +15,7 @@ import { ensureLambda } from './lambda';
 import {
   WorkGroupProperties,
   WorkGroupResultConfiguration,
+  LogLevel,
 } from '../lambda/types';
 
 export enum EncryptionOption {
@@ -84,6 +85,13 @@ export interface WorkGroupProps extends StackProps {
   // * @default - auto
   // */
   //readonly engineVersion?: number;
+
+  /**
+   * The log level of the Lambda function
+   *
+   * @default LogLevel.warn
+   */
+  readonly logLevel?: LogLevel;
 }
 
 export interface ResultConfiguration {

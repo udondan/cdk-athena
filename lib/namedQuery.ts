@@ -2,7 +2,7 @@ import { aws_lambda, CustomResource, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ensureLambda } from './lambda';
 import { WorkGroup } from './workGroup';
-import { NamedQueryProperties } from '../lambda/types';
+import { NamedQueryProperties, LogLevel } from '../lambda/types';
 
 const resourceType = 'Custom::Athena-NamedQuery';
 
@@ -34,6 +34,13 @@ export interface NamedQueryProps extends StackProps {
    * The contents of the query with all query statements
    */
   readonly queryString: string;
+
+  /**
+   * The log level of the Lambda function
+   *
+   * @default LogLevel.warn
+   */
+  readonly logLevel?: LogLevel;
 }
 
 /**

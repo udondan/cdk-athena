@@ -10,6 +10,7 @@ import {
 import { Construct } from 'constructs';
 
 import { EncryptionOption, NamedQuery, WorkGroup } from '../../lib';
+import { LogLevel } from '../../lambda/types';
 
 export class TestStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -36,6 +37,7 @@ export class TestStack extends Stack {
           kmsKey: 'aws/s3',
         },
       },
+      logLevel: LogLevel.DEBUG,
     });
 
     Tags.of(workgroup).add('SomeTag', 'SomeValue');

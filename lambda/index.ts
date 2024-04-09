@@ -14,8 +14,12 @@ export const handler = function (
   context: Context,
   callback: Callback,
 ) {
-  // @TODO: conditional, based on props
-  const logger = new StandardLogger(LogLevel.debug);
+  const logger = event.ResourceProperties.LogLevel
+    ? new StandardLogger(
+        // because jsii is forcing us to expose enums with all capitals and the enum in aws-cloudformation-custom-resource is all lowercase, we need to cast here. Other than the capitalization, the enums are identical
+        event.ResourceProperties.LogLevel as unknown as LogLevel,
+      )
+    : new StandardLogger();
 
   logger.debug('Environment:', JSON.stringify(process.env, null, 2));
 

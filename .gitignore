@@ -3,11 +3,9 @@ node_modules
 dist
 /tsconfig.json
 tsconfig.tsbuildinfo
-lambda/*
-!lambda/*.ts
-!lambda/build
-!lambda/package.json
-!lambda/package-lock.json
+lambda/code.zip
 **/*.js
 **/*.d.ts
 **/cdk.out
+*.tgz
+.npm

@@ -3,10 +3,11 @@ clean:
 	@rm -rf node_modules package-lock.json
 	@find .. \( -name "*.js" -o -name "*.d.ts" \) -type f -delete
 
-install: clean
+install: package
 	@echo Installing dependencies...
-	@cd .. && npm i
-	@npm i
+	@cd .. && make install
+	@npm install ../cdk-athena-test.tgz --prefer-offline --cache ../.npm
+	@npm list
 
 build: lambda
 	@echo Building application...
@@ -27,3 +28,11 @@ DESTROY: build
 lambda:
 	@echo Building Lambda...
 	@../lambda/build
+
+package:
+	@echo Building npm tgz...
+	@ \
+	cd .. && \
+	make build && \
+	npm pack && \
+	mv cdk-athena-*.tgz cdk-athena-test.tgz

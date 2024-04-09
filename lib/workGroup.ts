@@ -13,9 +13,10 @@ import {
 import { Construct } from 'constructs';
 import { ensureLambda } from './lambda';
 import {
+  LogLevel,
   WorkGroupProperties,
   WorkGroupResultConfiguration,
-} from '../lambda/types';
+} from './types';
 
 export enum EncryptionOption {
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -84,6 +85,13 @@ export interface WorkGroupProps extends StackProps {
   // * @default - auto
   // */
   //readonly engineVersion?: number;
+
+  /**
+   * The log level of the Lambda function
+   *
+   * @default LogLevel.warn
+   */
+  readonly logLevel?: LogLevel;
 }
 
 export interface ResultConfiguration {

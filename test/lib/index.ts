@@ -9,7 +9,7 @@ import {
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
-import { EncryptionOption, NamedQuery, WorkGroup } from '../../lib';
+import { EncryptionOption, LogLevel, NamedQuery, WorkGroup } from '../../lib';
 
 export class TestStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -36,6 +36,7 @@ export class TestStack extends Stack {
           kmsKey: 'aws/s3',
         },
       },
+      logLevel: LogLevel.DEBUG,
     });
 
     Tags.of(workgroup).add('SomeTag', 'SomeValue');
@@ -59,6 +60,7 @@ export class TestStack extends Stack {
           resources[1].arn
       `,
       workGroup: workgroup,
+      logLevel: LogLevel.DEBUG,
     });
 
     new CfnOutput(this, 'WorkGroupArn', {

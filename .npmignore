@@ -18,3 +18,14 @@ test
 .release-please-manifest.json
 release-please-config.json
 renovate.json
+
+.eslintrc
+.github
+Makefile
+.prettierrc
+CHANGELOG.md
+tsconfig*
+*.tgz
+lambda/*
+!lambda/code.zip
+.npm

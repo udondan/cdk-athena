@@ -9,7 +9,7 @@
     "cdk": "cdk"
   },
   "dependencies": {
-    "@types/node": "20.12.6",
+    "@types/node": "20.12.7",
     "aws-cdk": "2.136.0",
     "aws-cdk-lib": "2.136.0",
     "cdk-athena": "file:../cdk-athena-test.tgz",

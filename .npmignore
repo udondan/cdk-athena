@@ -28,5 +28,5 @@ tsconfig*
 *.tgz
 lambda/*
 !lambda/code.zip
-!lambda/types.js
 !lambda/types.d.ts
+.npm

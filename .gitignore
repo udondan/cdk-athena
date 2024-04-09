@@ -8,3 +8,4 @@ lambda/code.zip
 **/*.d.ts
 **/cdk.out
 *.tgz
+.npm

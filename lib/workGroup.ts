@@ -13,10 +13,10 @@ import {
 import { Construct } from 'constructs';
 import { ensureLambda } from './lambda';
 import {
+  LogLevel,
   WorkGroupProperties,
   WorkGroupResultConfiguration,
-  LogLevel,
-} from '../lambda/types';
+} from './types';
 
 export enum EncryptionOption {
   /* eslint-disable @typescript-eslint/naming-convention */

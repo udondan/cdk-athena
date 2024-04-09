@@ -9,8 +9,7 @@ import {
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
-import { EncryptionOption, NamedQuery, WorkGroup } from '../../lib';
-import { LogLevel } from '../../lambda/types';
+import { EncryptionOption, LogLevel, NamedQuery, WorkGroup } from '../../lib';
 
 export class TestStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {

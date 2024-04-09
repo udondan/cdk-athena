@@ -2,7 +2,8 @@ import { aws_lambda, CustomResource, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ensureLambda } from './lambda';
 import { WorkGroup } from './workGroup';
-import { NamedQueryProperties, LogLevel } from '../lambda/types';
+import { NamedQueryProperties } from '../lambda/types';
+import { LogLevel } from './types';
 
 const resourceType = 'Custom::Athena-NamedQuery';
 

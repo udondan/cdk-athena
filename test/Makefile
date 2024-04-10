@@ -5,7 +5,6 @@ clean:
 
 install: package
 	@echo Installing dependencies...
-	@cd .. && make install
 	@npm install ../cdk-athena-test.tgz --no-save --prefer-offline --cache ../.npm
 	@npm list
 
@@ -33,6 +32,6 @@ package:
 	@echo Building npm tgz...
 	@ \
 	cd .. && \
-	make build && \
+	make install build && \
 	npm pack && \
 	mv cdk-athena-*.tgz cdk-athena-test.tgz

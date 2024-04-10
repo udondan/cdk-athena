@@ -41,7 +41,7 @@
       }
     },
     "excludeTypescript": [
-      "lambda/**/*",
+      "lambda/**/*.ts",
       "test/**/*"
     ]
   },

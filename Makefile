@@ -27,7 +27,7 @@ validate-package:
 	@echo -e "$(TARGET_COLOR)Checking package content$(NO_COLOR)"
 	@npm publish --dry-run 2>&1 | tee publish_output.txt
 	@\
-	FILES_TO_CHECK="lambda/code.zip lib/index.d.ts lib/index.js lib/types.d.ts lib/types.js"; \
+	FILES_TO_CHECK="lambda/code.zip lib/index.d.ts lib/index.js lib/lambda.d.ts lib/lambda.js lib/namedQuery.d.ts lib/namedQuery.js lib/types.d.ts lib/types.js lib/workGroup.d.ts lib/workGroup.js"; \
 	MISSING_FILES=""; \
 	for file in $$FILES_TO_CHECK; do \
 		if ! grep -q $$file publish_output.txt; then \

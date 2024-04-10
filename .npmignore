@@ -29,3 +29,4 @@ tsconfig*
 lambda/*
 !lambda/code.zip
 .npm
+publish_output.txt

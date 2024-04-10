@@ -8,8 +8,7 @@ import {
   Tags,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-
-import { EncryptionOption, LogLevel, NamedQuery, WorkGroup } from '../../lib';
+import { EncryptionOption, LogLevel, NamedQuery, WorkGroup } from 'cdk-athena';
 
 export class TestStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {

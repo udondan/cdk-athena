@@ -12,7 +12,6 @@
     "@types/node": "20.12.7",
     "aws-cdk": "2.136.1",
     "aws-cdk-lib": "2.136.1",
-    "cdk-athena": "file:../cdk-athena-test.tgz",
     "ts-node": "10.9.2",
     "typescript": "5.4.4"
   }

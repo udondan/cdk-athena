@@ -39,7 +39,11 @@
         "distName": "cdk-athena",
         "module": "cdk_athena"
       }
-    }
+    },
+    "excludeTypescript": [
+      "lambda/**/*",
+      "test/**/*"
+    ]
   },
   "devDependencies": {
     "@aws-sdk/client-athena": "3.552.0",

@@ -66,13 +66,6 @@ async function createResource(
         resource.properties.PublishCloudWatchMetricsEnabled?.value == 'true',
       RequesterPaysEnabled:
         resource.properties.RequesterPaysEnabled?.value == 'true',
-
-      // @TODO: this should be working now in SDK v3
-      // docs say yes, api says no  ¯\_(ツ)_/¯
-      //EngineVersion: {
-      //  SelectedEngineVersion:
-      //    event.ResourceProperties.EngineVersion ?? 'auto',
-      //},
     },
     Tags: makeTags(resource, resource.properties.Tags.value),
     /* eslint-enable @typescript-eslint/naming-convention */
@@ -147,13 +140,6 @@ async function updateWorkGroup(
       RequesterPaysEnabled:
         resource.properties.RequesterPaysEnabled?.value == 'true',
       /* eslint-enable @typescript-eslint/naming-convention */
-
-      // @TODO: this should be working now in SDK v3
-      // docs say yes, api says no  ¯\_(ツ)_/¯
-      //EngineVersion: {
-      //  SelectedEngineVersion:
-      //    event.ResourceProperties.EngineVersion ?? 'auto',
-      //},
     },
   };
 

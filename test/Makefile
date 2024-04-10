@@ -5,6 +5,7 @@ clean:
 
 install:
 	@echo Installing dependencies...
+	@ls -alh ..
 	@npm install ../cdk-athena-*.tgz --no-save --prefer-offline --cache ../.npm
 	@npm list
 
